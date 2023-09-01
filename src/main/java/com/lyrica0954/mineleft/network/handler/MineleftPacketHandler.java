@@ -48,9 +48,7 @@ public class MineleftPacketHandler implements IPacketHandler {
 		}
 
 		player.setWorld(world);
-		player.setPosition(packet.position);
-
-		this.session.getLogger().info("Moved to " + packet.position.toString());
+		player.setPosition(packet.position.copy());
 	}
 
 	@Override
@@ -70,7 +68,7 @@ public class MineleftPacketHandler implements IPacketHandler {
 			throw PacketHandlingException.wrap(e);
 		}
 
-		this.session.getLogger().info(String.format("Deserialized chunk! x: %d, z: %d", packet.x, packet.z));
+		//this.session.getLogger().info(String.format("Deserialized chunk! x: %d, z: %d", packet.x, packet.z));
 
 
 		World world;
