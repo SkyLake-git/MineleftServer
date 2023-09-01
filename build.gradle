@@ -6,7 +6,7 @@ apply plugin: "java-library"
 
 group = 'com.skylake'
 version = '1.0-SNAPSHOT'
-
+compileJava.options.encoding = 'UTF-8'
 sourceSets.main.resources.srcDirs = ["src/main/resources"]
 
 repositories {
