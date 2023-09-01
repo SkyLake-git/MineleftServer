@@ -14,9 +14,11 @@ public class InputFlags {
 
 	public static final int SNEAK = 6;
 
-	public static final int UP_LEFT = 7;
+	public static final int SPRINT = 7;
 
-	public static final int UP_RIGHT = 8;
+	public static final int UP_LEFT = 8;
 
-	public static final int MISSED_SWING = 9;
+	public static final int UP_RIGHT = 9;
+
+	public static final int MISSED_SWING = 10;
 }

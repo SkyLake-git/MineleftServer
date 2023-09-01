@@ -1,5 +1,6 @@
 package com.lyrica0954.mineleft.network.protocol.types;
 
+import com.lyrica0954.mineleft.mc.math.EntityRot;
 import com.lyrica0954.mineleft.mc.math.Vec3d;
 import com.lyrica0954.mineleft.utils.ByteBufHelper;
 import io.netty.buffer.ByteBuf;
@@ -10,6 +11,8 @@ public class InputData {
 
 	protected Vec3d delta;
 
+	protected EntityRot rot;
+
 	protected float moveVecX;
 
 	protected float moveVecZ;
@@ -19,6 +22,11 @@ public class InputData {
 		this.delta = new Vec3d();
 		this.moveVecX = 0;
 		this.moveVecZ = 0;
+		this.rot = new EntityRot();
+	}
+
+	public EntityRot getRot() {
+		return rot;
 	}
 
 	public float getMoveVecX() {
@@ -42,6 +50,9 @@ public class InputData {
 		this.delta = ByteBufHelper.readVec3d(buf);
 		this.moveVecX = buf.readFloat();
 		this.moveVecZ = buf.readFloat();
+		this.rot = new EntityRot();
+		this.rot.yaw = buf.readFloat();
+		this.rot.pitch = buf.readFloat();
 	}
 
 	public void write(ByteBuf buf) throws Exception {
@@ -49,6 +60,9 @@ public class InputData {
 		ByteBufHelper.writeVec3d(buf, this.delta);
 		buf.writeFloat(this.moveVecX);
 		buf.writeFloat(this.moveVecZ);
+
+		buf.writeFloat(this.rot.yaw);
+		buf.writeFloat(this.rot.pitch);
 	}
 
 	public void appendFlag(int flag) {
