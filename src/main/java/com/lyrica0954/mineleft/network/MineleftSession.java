@@ -71,8 +71,6 @@ public class MineleftSession {
 			return;
 		}
 
-		this.logger.info("Received packet: " + packet.getName());
-
 		try {
 			this.packetHandlerCaller.call(packet);
 		} catch (PacketHandlingException e) {
