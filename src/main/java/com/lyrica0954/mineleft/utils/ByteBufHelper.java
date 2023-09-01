@@ -5,8 +5,7 @@ import com.lyrica0954.mineleft.mc.math.Vec3i;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ByteBufHelper {
 
@@ -22,13 +21,33 @@ public class ByteBufHelper {
 		return list;
 	}
 
-	public static <T> List<T> consumeList(ByteBuf buf, List<T> list, ThrowingConsumer<T> consumer) throws Exception {
+	public static <K, V> AbstractMap<K, V> produceMap(ByteBuf buf, ThrowingSupplier<Map.Entry<K, V>> supplier) throws Exception {
+		int count = buf.readInt();
+
+		AbstractMap<K, V> map = new HashMap<>();
+
+		for (int i = 0; i < count; i++) {
+			Map.Entry<K, V> entry = supplier.get();
+			map.put(entry.getKey(), entry.getValue());
+		}
+
+		return map;
+	}
+
+	public static <K, V> void consumeMap(ByteBuf buf, Map<K, V> map, ThrowingConsumer<Map.Entry<K, V>> consumer) throws Exception {
+		buf.writeInt(map.size());
+
+		for (Map.Entry<K, V> entry : map.entrySet()) {
+			consumer.accept(entry);
+		}
+	}
+
+	public static <T> void consumeList(ByteBuf buf, List<T> list, ThrowingConsumer<T> consumer) throws Exception {
 		buf.writeInt(list.size());
 
 		for (T i : list) {
 			consumer.accept(i);
 		}
-		return list;
 	}
 
 	public static Vec3d readVec3d(ByteBuf buf) throws Exception {
