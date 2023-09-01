@@ -1,7 +1,7 @@
 <configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%cyan(%d{${LOG_DATEFORMAT_PATTERN:-HH:mm:ss.SSS}}) %-42.50([%green(%t) /%highlight(${LOG_LEVEL_PATTERN:-%5p})]) %-18.40logger{39}: %m%n
+            <pattern>%cyan(%d{${LOG_DATEFORMAT_PATTERN:-HH:mm:ss.SSS}}) %-42.150([%green(%t) /%highlight(${LOG_LEVEL_PATTERN:-%5p})]) %-18.80logger{39}: %m%n
             </pattern>
         </encoder>
     </appender>
