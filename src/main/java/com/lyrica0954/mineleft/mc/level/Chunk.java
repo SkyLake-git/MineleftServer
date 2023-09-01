@@ -39,7 +39,7 @@ public class Chunk {
 
 	public SubChunk getSubchunk(int y) {
 		if (y < MIN_SUBCHUNK_INDEX || y > MAX_SUBCHUNK_INDEX) {
-			throw new IndexOutOfBoundsException();
+			throw new IndexOutOfBoundsException("index: " + y);
 		}
 
 		return this.subChunks[y - MIN_SUBCHUNK_INDEX];
