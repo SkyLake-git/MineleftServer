@@ -1,7 +1,7 @@
 package com.lyrica0954.mineleft.network.protocol;
 
-import com.lyrica0954.mineleft.net.IPacketPool;
-import com.lyrica0954.mineleft.net.Packet;
+import com.lyrica0954.protocol.IPacketPool;
+import com.lyrica0954.protocol.Packet;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;

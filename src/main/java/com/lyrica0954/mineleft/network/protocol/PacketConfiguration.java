@@ -1,7 +1,7 @@
 package com.lyrica0954.mineleft.network.protocol;
 
-import com.lyrica0954.mineleft.net.PacketBounds;
 import com.lyrica0954.mineleft.utils.ByteBufHelper;
+import com.lyrica0954.protocol.PacketBounds;
 import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.NotNull;
 

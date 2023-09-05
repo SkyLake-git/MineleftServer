@@ -1,9 +1,9 @@
 package com.lyrica0954.mineleft;
 
-import com.lyrica0954.mineleft.net.IPacketPool;
-import com.lyrica0954.mineleft.net.NettyChannelInitializer;
 import com.lyrica0954.mineleft.network.SessionManager;
 import com.lyrica0954.mineleft.network.protocol.MineleftPacketPool;
+import com.lyrica0954.protocol.IPacketPool;
+import com.lyrica0954.protocol.NettyChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -18,6 +18,7 @@ public class MineleftServerBootstrap {
 	public MineleftServerBootstrap() {
 
 	}
+
 	public void start(int port) {
 		EventLoopGroup mainGroup = new NioEventLoopGroup();
 		Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -37,7 +38,7 @@ public class MineleftServerBootstrap {
 
 			future.sync();
 
-			if (future.isSuccess()){
+			if (future.isSuccess()) {
 				logger.info("Socket bound. Starting server");
 				MineleftServer server = new MineleftServer(future.channel(), sessionManager);
 			}

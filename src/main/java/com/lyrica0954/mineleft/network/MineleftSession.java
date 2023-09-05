@@ -5,6 +5,8 @@ import com.lyrica0954.mineleft.network.handler.MineleftPacketHandler;
 import com.lyrica0954.mineleft.network.player.MineleftPlayerProfile;
 import com.lyrica0954.mineleft.network.protocol.MineleftPacket;
 import com.lyrica0954.mineleft.utils.ParameterMethodCaller;
+import com.lyrica0954.protocol.ISession;
+import com.lyrica0954.protocol.Packet;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Hashtable;
 import java.util.UUID;
 
-public class MineleftSession {
+public class MineleftSession implements ISession {
 
 	protected ChannelHandlerContext ctx;
 
@@ -65,14 +67,19 @@ public class MineleftSession {
 
 	}
 
-	public void handlePacket(MineleftPacket packet) throws PacketHandlingException {
+	public void handlePacket(Packet packet) throws Exception {
 		if (!packet.bounds().server()) {
 			this.logger.warn("Invalid bounding packet received. ignoring");
 			return;
 		}
 
+		if (!(packet instanceof MineleftPacket)) {
+			this.logger.warn("Non-mineleft packet received. ignoring");
+			return;
+		}
+
 		try {
-			this.packetHandlerCaller.call(packet);
+			this.packetHandlerCaller.call((MineleftPacket) packet);
 		} catch (PacketHandlingException e) {
 			this.ctx.disconnect();
 		} catch (Throwable e) {

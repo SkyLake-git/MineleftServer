@@ -2,15 +2,17 @@ plugins {
     id 'java'
 }
 
-apply plugin: "java-library"
+apply plugin: "java"
 
-group = 'com.skylake'
-version = '1.0-SNAPSHOT'
+group = 'com.lyrica0954'
+version = '1.0'
 compileJava.options.encoding = 'UTF-8'
 sourceSets.main.resources.srcDirs = ["src/main/resources"]
 
 repositories {
     mavenCentral()
+    google()
+    mavenLocal()
 }
 
 dependencies {
@@ -19,6 +21,7 @@ dependencies {
     implementation group: 'io.netty', name: 'netty-all', version: '4.1.97.Final'
     implementation 'ch.qos.logback:logback-classic:1.2.9'
     implementation 'org.jetbrains:annotations:23.0.0'
+    implementation group: 'com.lyrica0954', name: 'protocol-base', version: '1.0.0'
 }
 
 test {
