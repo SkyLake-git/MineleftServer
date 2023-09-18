@@ -11,7 +11,6 @@ sourceSets.main.resources.srcDirs = ["src/main/resources"]
 
 repositories {
     mavenCentral()
-    google()
     mavenLocal()
 }
 
@@ -21,7 +20,8 @@ dependencies {
     implementation group: 'io.netty', name: 'netty-all', version: '4.1.97.Final'
     implementation 'ch.qos.logback:logback-classic:1.2.9'
     implementation 'org.jetbrains:annotations:23.0.0'
-    implementation group: 'com.lyrica0954', name: 'protocol-base', version: '1.0.0'
+    implementation group: 'com.lyrica0954', name: 'protocol-base', version: '1.0.4'
+    implementation 'net.intelie.tinymap:tinymap:0.7'
 }
 
 test {
