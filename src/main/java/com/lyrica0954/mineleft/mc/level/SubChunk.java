@@ -1,7 +1,6 @@
 package com.lyrica0954.mineleft.mc.level;
 
-import com.lyrica0954.mineleft.mc.BlockPalette;
-import com.lyrica0954.mineleft.mc.PaletteBlock;
+import com.lyrica0954.mineleft.MortonCode;
 import io.netty.buffer.ByteBuf;
 
 public class SubChunk {
@@ -30,17 +29,22 @@ public class SubChunk {
 
 	public void read(ByteBuf buf) throws Exception {
 		int count = buf.readInt();
+
+		BlockPalette.Builder paletteBuilder = BlockPalette.builder();
+
 		for (int j = 0; j < count; j++) {
 			int layerBlockCount = buf.readInt();
 
 			for (int i = 0; i < layerBlockCount; i++) {
-				int[] v = this.palette.getMorton().decode(buf.readLong());
+				int[] v = MortonCode.get3D().decode(buf.readLong());
 
 				PaletteBlock block = new PaletteBlock();
 				block.read(buf);
 
-				this.setBlock(v[0], v[1] & SubChunk.COORD_MASK, v[2], block);
+				paletteBuilder.set(v[0], v[1] & SubChunk.COORD_MASK, v[2], block);
 			}
 		}
+
+		this.palette = paletteBuilder.build();
 	}
 }
