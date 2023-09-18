@@ -1,6 +1,5 @@
 package com.lyrica0954.mineleft.mc.level;
 
-import com.lyrica0954.mineleft.mc.PaletteBlock;
 import io.netty.buffer.ByteBuf;
 
 import java.util.List;
@@ -29,7 +28,7 @@ public class Chunk {
 		}
 	}
 
-	public void setBlock(int x, int y, int z, PaletteBlock block) {
+	public synchronized void setBlock(int x, int y, int z, PaletteBlock block) {
 		this.getSubchunk(y >> SubChunk.COORD_BIT_SIZE).setBlock(x, y & SubChunk.COORD_MASK, z, block);
 	}
 
