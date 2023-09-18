@@ -53,16 +53,20 @@ public class Vec3d {
 		return this.x * this.x + this.y * this.y + this.z * this.z;
 	}
 
-	public Vec3d normalize() {
+	public Vec3d normalize(double f) {
 		double d = this.lengthSquared();
 
 		if (d < 1.0e-5) {
 			return zero();
 		}
 
-		double len = Math.sqrt(d);
+		double len = Math.sqrt(d) * f;
 
 		return new Vec3d(this.x / len, this.y / len, this.z / len);
+	}
+
+	public Vec3d normalize() {
+		return this.normalize(1.0d);
 	}
 
 	public double length() {

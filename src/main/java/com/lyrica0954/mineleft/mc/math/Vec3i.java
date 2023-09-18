@@ -13,4 +13,8 @@ public class Vec3i {
 		this.y = y;
 		this.z = z;
 	}
+
+	public Vec3d toDouble() {
+		return new Vec3d(this.x, this.y, this.z);
+	}
 }
