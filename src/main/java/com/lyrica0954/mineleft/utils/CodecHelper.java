@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class ByteBufHelper {
+public class CodecHelper {
 
 	public static <T> List<T> produceList(ByteBuf buf, ThrowingSupplier<T> supplier) throws Exception {
 		int count = buf.readInt();
@@ -70,11 +70,20 @@ public class ByteBufHelper {
 		buf.writeInt(vec.z);
 	}
 
-	public static void writeStandardCharSequence(ByteBuf buf, CharSequence charSequence) throws Exception {
+	public static void writeUUID(ByteBuf buf, UUID uuid) throws Exception {
+		writeUTFSequence(buf, uuid.toString());
+	}
+
+	public static UUID readUUID(ByteBuf buf) throws Exception {
+		return UUID.fromString(readUTFSequence(buf));
+	}
+
+	public static void writeUTFSequence(ByteBuf buf, CharSequence charSequence) throws Exception {
+		buf.writeInt(charSequence.length()); // unsigned int is better...
 		buf.writeCharSequence(charSequence, StandardCharsets.UTF_8);
 	}
 
-	public static String readStandardCharSequence(ByteBuf buf) throws Exception {
+	public static String readUTFSequence(ByteBuf buf) throws Exception {
 		return buf.readCharSequence(buf.readInt(), StandardCharsets.UTF_8).toString();
 	}
 }
