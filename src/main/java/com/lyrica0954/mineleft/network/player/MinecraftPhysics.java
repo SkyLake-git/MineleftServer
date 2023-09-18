@@ -11,7 +11,9 @@ public class MinecraftPhysics {
 			return Vec3d.zero();
 		}
 
-		Vec3d move = (d > 1.0 ? input.normalize() : input).multiply(speed);
+		Vec3d move = input.multiply(speed);
+
+		System.out.println("Input: " + move.toString());
 
 		double f = Math.sin(yaw * ((float) Math.PI / 180));
 		double g = Math.cos(yaw * ((float) Math.PI / 180));

@@ -31,14 +31,9 @@ public class EntityMovementInput {
 		this.pressingSprint = false;
 	}
 
-	public void tick(boolean slowdown) {
+	public void tick() {
 		this.movementForward = this.pressingForward == this.pressingBack ? 0.0f : (this.pressingForward ? 1.0f : -1.0f);
 
 		this.movementSideways = this.pressingLeft == this.pressingRight ? 0.0f : (this.pressingLeft ? 1.0f : -1.0f);
-
-		if (slowdown) {
-			this.movementSideways *= 0.3;
-			this.movementForward *= 0.3;
-		}
 	}
 }

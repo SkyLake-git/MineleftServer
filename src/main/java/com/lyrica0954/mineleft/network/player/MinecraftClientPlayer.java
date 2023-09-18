@@ -1,19 +1,40 @@
 package com.lyrica0954.mineleft.network.player;
 
-import com.lyrica0954.mineleft.mc.level.World;
+import com.lyrica0954.mineleft.mc.level.WorldInterface;
 import com.lyrica0954.mineleft.mc.math.AxisAlignedBB;
 import com.lyrica0954.mineleft.mc.math.Vec3d;
 
 public class MinecraftClientPlayer extends MinecraftEntityLiving {
 
-	public EntityMovementInput entityInput;
+	public EntityMovementInput keyboardInput;
 
 	protected boolean usingItem;
 
-	public MinecraftClientPlayer(World world, Vec3d position, AxisAlignedBB boundingBox) {
+	protected int continueSprintTicks;
+
+	protected int sneakTicks;
+
+	protected float baseMovementSpeed;
+
+	protected float lastMovementForward;
+
+	public MinecraftClientPlayer(WorldInterface world, Vec3d position, AxisAlignedBB boundingBox) {
 		super(world, position, boundingBox);
-		this.entityInput = new EntityMovementInput();
+		this.keyboardInput = new EntityMovementInput();
 		this.usingItem = false;
+		this.continueSprintTicks = 0;
+		this.baseMovementSpeed = 0.1f;
+		this.flyingSpeed = 0.02f;
+		this.lastMovementForward = 0.0f;
+	}
+
+
+	public float getBaseMovementSpeed() {
+		return baseMovementSpeed;
+	}
+
+	public void setBaseMovementSpeed(float baseMovementSpeed) {
+		this.baseMovementSpeed = baseMovementSpeed;
 	}
 
 	public boolean isUsingItem() {
@@ -24,39 +45,73 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 		this.usingItem = usingItem;
 	}
 
+	public boolean isWalking() {
+		return this.touchingWater ? Math.abs(this.keyboardInput.movementForward) > 1.0e-5f : Math.abs(this.keyboardInput.movementForward) >= 0.8f;
+	}
+
 	@Override
 	public void updateMovement() {
-		this.entityInput.tick(this.entityInput.sneaking);
+		boolean lastSprinting = this.isSprinting();
+		boolean sneakAlternate = this.isSneaking() && !this.keyboardInput.sneaking;
+		boolean sprintAlternate = this.isSprinting() && !this.keyboardInput.pressingSprint;
+		this.sneaking = this.keyboardInput.sneaking;
+		this.jumping = this.keyboardInput.jumping;
+
+		if (this.isSneaking()) {
+			++this.sneakTicks;
+		} else {
+			this.sneakTicks = 0;
+		}
+
+		this.keyboardInput.tick();
 
 		if (this.isUsingItem()) {
-			this.entityInput.movementSideways *= 0.2f;
-			this.entityInput.movementForward *= 0.2f;
+			this.keyboardInput.movementSideways *= 0.2f;
+			this.keyboardInput.movementForward *= 0.2f;
 		}
 
 		//todo: check submerged, food
-		if (this.entityInput.pressingSprint && !this.isUsingItem()) {
-			this.sprinting = true;
+		if (!this.isSprinting() && this.keyboardInput.pressingSprint && !this.isUsingItem() && this.isWalking()) {
+			this.setSprinting(true);
 		}
 
-		this.sneaking = this.entityInput.sneaking;
-		this.jumping = this.entityInput.jumping;
-
-		if (this.sprinting) {
-			// todo: check submerged
-		}
-
-		this.forwardSpeed = this.entityInput.movementForward;
-		this.sidewaysSpeed = this.entityInput.movementSideways;
-
-		if (this.touchingWater && this.entityInput.sneaking) {
+		if (this.touchingWater && this.keyboardInput.sneaking) {
 			this.setMotion(this.getMotion().subtract(0, 0.04d, 0));
+		}
+
+		this.movementSpeed = this.baseMovementSpeed;
+		if (this.isSprinting() || lastSprinting) {
+			this.movementSpeed *= 1.3f;
+		}
+
+		if (Math.abs(this.keyboardInput.movementForward) > 1e-4 || Math.abs(this.keyboardInput.movementSideways) > 1e-4) {
+			Vec3d movementInput = new Vec3d(this.keyboardInput.movementSideways, 0d, this.keyboardInput.movementForward).normalize();
+
+			if (this.isSneaking() || sneakAlternate) {
+				movementInput.x *= 0.3f;
+				movementInput.z *= 0.3f;
+			}
+
+			this.forwardSpeed = (float) movementInput.z;
+			this.upwardSpeed = (float) movementInput.y;
+			this.sidewaysSpeed = (float) movementInput.x;
+		} else {
+			this.forwardSpeed = 0f;
+			this.upwardSpeed = 0f;
+			this.sidewaysSpeed = 0f;
+		}
+
+		this.flyingSpeed = 0.02f;
+		if (this.isSprinting() || sprintAlternate) {
+			this.flyingSpeed += 0.005999999865889549f;
 		}
 
 		super.updateMovement();
 
-		this.flyingSpeed = 0.02f;
-		if (this.sprinting) {
-			this.flyingSpeed += 0.005999999865889549f;
+		if (this.isSprinting() && (!this.keyboardInput.pressingSprint || Math.abs(this.lastMovementForward) <= 1e-5f)) {
+			this.setSprinting(false);
 		}
+
+		this.lastMovementForward = this.keyboardInput.movementForward;
 	}
 }

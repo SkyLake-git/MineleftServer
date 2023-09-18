@@ -1,9 +1,8 @@
 package com.lyrica0954.mineleft.network.player;
 
-import com.lyrica0954.mineleft.mc.Block;
-import com.lyrica0954.mineleft.mc.BlockAttributeFlags;
 import com.lyrica0954.mineleft.mc.VanillaBlockIdentifiers;
-import com.lyrica0954.mineleft.mc.level.World;
+import com.lyrica0954.mineleft.mc.WorldBlock;
+import com.lyrica0954.mineleft.mc.level.WorldInterface;
 import com.lyrica0954.mineleft.mc.math.AxisAlignedBB;
 import com.lyrica0954.mineleft.mc.math.EntityRot;
 import com.lyrica0954.mineleft.mc.math.Vec3d;
@@ -29,9 +28,7 @@ public class MinecraftEntityLiving {
 
 	protected AxisAlignedBB boundingBox;
 
-	protected PlayerFlags flags;
-
-	protected World world;
+	protected WorldInterface world;
 
 	protected float stepHeight;
 
@@ -59,18 +56,19 @@ public class MinecraftEntityLiving {
 
 	protected HashMap<String, Float> fluidHeights;
 
-	public MinecraftEntityLiving(World world, Vec3d position, AxisAlignedBB boundingBox) {
+	protected float actuallyForwardSpeed;
+
+	public MinecraftEntityLiving(WorldInterface world, Vec3d position, AxisAlignedBB boundingBox) {
 		this.position = position;
 		this.motion = new Vec3d();
 		this.rot = new EntityRot();
 		this.boundingBox = boundingBox;
-		this.flags = new PlayerFlags();
 		this.world = world;
 		this.isCollidedHorizontally = false;
 		this.isCollidedVertically = false;
 		this.movementSpeed = 0.1f;
 		this.stepHeight = 0.6f;
-		this.jumpVelocity = 0.4f;
+		this.jumpVelocity = 0.42f;
 		this.onGround = false;
 		this.sneaking = false;
 		this.jumping = false;
@@ -80,6 +78,7 @@ public class MinecraftEntityLiving {
 		this.forwardSpeed = 0.0f;
 		this.upwardSpeed = 0.0f;
 		this.flyingSpeed = 0.02f;
+		this.actuallyForwardSpeed = 0.0f;
 		this.touchingWater = false;
 		this.fluidHeights = new HashMap<>();
 	}
@@ -110,8 +109,12 @@ public class MinecraftEntityLiving {
 		this.boundingBox.offset(diff.x, diff.y, diff.z);
 	}
 
-	public World getWorld() {
+	public WorldInterface getWorld() {
 		return world;
+	}
+
+	public void setWorld(WorldInterface world) {
+		this.world = world;
 	}
 
 	public Vec3d getMotion() {
@@ -119,7 +122,7 @@ public class MinecraftEntityLiving {
 	}
 
 	public void setMotion(Vec3d motion) {
-		this.motion = motion;
+		this.motion = motion.copy();
 	}
 
 	public void setMotion(double x, double y, double z) {
@@ -130,87 +133,6 @@ public class MinecraftEntityLiving {
 
 	public EntityRot getRot() {
 		return rot;
-	}
-
-	public void moveEntityWithHeading(float strafe, float forward) {
-
-		if (!this.flags.has(PlayerFlags.IN_WATER)) {
-			if (!this.flags.has(PlayerFlags.IN_LAVA)) {
-				float f = 0.91f;
-
-				if (this.onGround) {
-					f = this.world.getBlock(this.position.subtract(0, 1d, 0)).getFriction();
-				}
-
-				float f1 = 0.16277136f / (f * f * f);
-				float f5;
-
-				if (this.onGround) {
-					f5 = this.movementSpeed * f1;
-				} else {
-					f5 = this.jumpVelocity;
-				}
-
-				this.moveFlying(strafe, forward, f5);
-
-				if (this.flags.has(PlayerFlags.ON_LADDER)) {
-					float f6 = 0.15f;
-
-					this.motion.x = MathHelper.clamp(this.motion.x, -f6, f6);
-					this.motion.z = MathHelper.clamp(this.motion.z, -f6, f6);
-
-					if (this.motion.y < -0.15d) {
-						this.motion.y = -0.15d;
-					}
-
-					if (this.sneaking && this.motion.y < 0.0d) {
-						this.motion.y = 0.0d;
-					}
-				}
-
-				this.moveEntity(this.motion.x, this.motion.y, this.motion.z);
-
-				if (this.isCollidedHorizontally && this.flags.has(PlayerFlags.ON_LADDER)) {
-					this.motion.y = 0.2d;
-				}
-
-				this.motion.y -= 0.08d;
-
-				this.motion.y *= 0.9800000190734863d;
-				this.motion.x *= f;
-				this.motion.z *= f;
-			} else {
-				double d = this.position.y;
-				this.moveFlying(strafe, forward, 0.02f);
-				this.moveEntity(this.motion.x, this.motion.y, this.motion.z);
-				this.motion = this.motion.multiply(0.5d);
-				this.motion.y -= 0.02d;
-
-				AxisAlignedBB bb = this.boundingBox.offsetCopy(this.motion.x, this.motion.y + 0.6000000238418579d - this.position.y + d, this.motion.z);
-				if (this.isCollidedHorizontally && this.world.hasBlockIn(bb, Block::isLiquid)) {
-					this.motion.y = 0.30000001192092896d;
-				}
-			}
-		} else {
-			double d1 = this.position.y;
-			float f1 = 0.8f;
-			float f2 = 0.02f;
-
-			this.moveFlying(strafe, forward, f2);
-			this.moveEntity(this.motion.x, this.motion.y, this.motion.z);
-
-			this.motion.x *= f1;
-			this.motion.y *= 0.800000011920929d;
-			this.motion.z *= f1;
-			this.motion.y -= 0.02d;
-
-			AxisAlignedBB bb = this.boundingBox.offsetCopy(this.motion.x, this.motion.y + 0.6000000238418579d - this.position.y + d1, this.motion.z);
-			if (this.isCollidedHorizontally && this.world.hasBlockIn(bb, Block::isLiquid)) {
-				this.motion.y = 0.30000001192092896d;
-			}
-		}
-
-		this.checkLiquidState(); // todo: move to baseTick()
 	}
 
 	public void checkLiquidState() {
@@ -241,6 +163,7 @@ public class MinecraftEntityLiving {
 	public Vec3d moveWithHeading(Vec3d movementInput, float friction) {
 		this.updateVelocity(this.getVelocitySpeed(friction), movementInput);
 		this.setMotion(this.applyClimbing(this.getMotion()));
+		System.out.println("Internal move diff: " + this.motion.toString());
 		this.moveEntity(this.motion.x, this.motion.y, this.motion.z);
 
 		Vec3d motion = this.getMotion();
@@ -260,21 +183,20 @@ public class MinecraftEntityLiving {
 		if (this.jumpCoolDown > 0) {
 			--this.jumpCoolDown;
 		}
-		this.setMotion(this.getMotion().multiply(0.98));
 
 		double x = this.motion.x;
 		double y = this.motion.y;
 		double z = this.motion.z;
 
-		if (Math.abs(x) < 0.003) {
+		if (Math.abs(x) < 0.00003) {
 			x = 0.0;
 		}
 
-		if (Math.abs(y) < 0.003) {
+		if (Math.abs(y) < 0.00003) {
 			y = 0.0;
 		}
 
-		if (Math.abs(z) < 0.003) {
+		if (Math.abs(z) < 0.00003) {
 			z = 0.0;
 		}
 
@@ -292,7 +214,7 @@ public class MinecraftEntityLiving {
 			// todo: check eye heights
 			if (bl && !this.onGround) {
 				this.swimUpward();
-			} else if (this.onGround) {
+			} else if (this.onGround && this.jumpCoolDown == 0) {
 				this.jump();
 				this.jumpCoolDown = 10;
 			}
@@ -300,10 +222,7 @@ public class MinecraftEntityLiving {
 			this.jumpCoolDown = 0;
 		}
 
-		this.sidewaysSpeed *= 0.98f;
-		this.forwardSpeed *= 0.98f;
-
-		this.travel(new Vec3d(this.sidewaysSpeed, this.upwardSpeed, this.forwardSpeed));
+		this.travel(new Vec3d(this.sidewaysSpeed * 0.98f, this.upwardSpeed, this.forwardSpeed * 0.98f));
 	}
 
 	protected void jump() {
@@ -326,15 +245,16 @@ public class MinecraftEntityLiving {
 	}
 
 	public void travel(Vec3d movementInput) {
-		// todo: support liquids
+		// todo: support
 
 		double d = 0.08;
 
-		Block block = this.getWorld().getBlock(this.getMotionAffectingPosition());
+		WorldBlock block = this.getWorld().getBlock(this.getMotionAffectingPosition());
 
 		float p = block.getFriction();
 		float f = this.onGround ? p * 0.91f : 0.91f;
 
+		System.out.println("Block: " + block.getIdentifier() + " p: " + p);
 
 		Vec3d motion = this.moveWithHeading(movementInput, p);
 
@@ -359,9 +279,9 @@ public class MinecraftEntityLiving {
 	}
 
 	private boolean isClimbing() {
-		Block block = this.getWorld().getBlock(this.position);
+		WorldBlock block = this.getWorld().getBlock(this.position);
 
-		return block.hasAttributeFlag(BlockAttributeFlags.CLIMBABLE);
+		return block.isClimbable();
 	}
 
 	private float getVelocitySpeed(float friction) {
@@ -372,28 +292,20 @@ public class MinecraftEntityLiving {
 		return this.flyingSpeed;
 	}
 
-	public float getMovementSpeed() {
-		return this.movementSpeed;
+	public boolean isSprinting() {
+		return sprinting;
 	}
 
-	public void moveFlying(float strafe, float forward, float friction) {
-		float f = strafe * strafe + forward * forward;
+	public void setSprinting(boolean sprinting) {
+		this.sprinting = sprinting;
+	}
 
-		if (f >= 1.0E-4F) {
-			f = MathHelper.sqrtFloat(f);
+	public boolean isSneaking() {
+		return sneaking;
+	}
 
-			if (f < 1.0F) {
-				f = 1.0F;
-			}
-
-			f = friction / f;
-			strafe = strafe * f;
-			forward = forward * f;
-			float f1 = (float) Math.sin(this.rot.yaw * (float) Math.PI / 180.0F);
-			float f2 = (float) Math.cos(this.rot.yaw * (float) Math.PI / 180.0F);
-			this.motion.x += strafe * f2 - forward * f1;
-			this.motion.z += forward * f2 + strafe * f1;
-		}
+	public float getMovementSpeed() {
+		return this.movementSpeed;
 	}
 
 	private void resetPositionToBoundingBox() {
@@ -403,137 +315,82 @@ public class MinecraftEntityLiving {
 	}
 
 	public void moveEntity(double x, double y, double z) {
-		double dx = this.position.x;
-		double dy = this.position.y;
-		double dz = this.position.z;
-
-		if (this.flags.has(PlayerFlags.IN_WEB)) {
-			this.flags.remove(PlayerFlags.IN_WEB);
-
-			x *= 0.25d;
-			y *= 0.05000000074505806d;
-			z *= 0.25d;
-
-			this.motion.x = 0d;
-			this.motion.y = 0d;
-			this.motion.z = 0d;
-		}
-
 		List<AxisAlignedBB> boxes = this.world.getCollisionBoxes(this.boundingBox.copy().addCoord(x, y, z));
 
 		double bx = x;
 		double by = y;
 		double bz = z;
 
-		AxisAlignedBB beforeBB = this.boundingBox.copy();
+		AxisAlignedBB bb = this.boundingBox.copy();
 
 		for (AxisAlignedBB bbY : boxes) {
-			y = bbY.calculateYOffset(this.boundingBox, y);
+			y = bbY.calculateYOffset(bb, y);
 		}
 
-		this.boundingBox = this.boundingBox.offsetCopy(0d, y, 0d);
-		boolean wantedVertically = this.onGround || by != y && by < 0.0d;
+		bb.offset(0d, y, 0d);
+		boolean wantedVertically = this.onGround || (by != y && by < 0.0d);
 
 		for (AxisAlignedBB bbX : boxes) {
-			x = bbX.calculateXOffset(this.boundingBox, x);
+			x = bbX.calculateXOffset(bb, x);
 		}
 
-		this.boundingBox = this.boundingBox.offsetCopy(x, 0d, 0d);
+		bb.offset(x, 0d, 0d);
 
 		for (AxisAlignedBB bbZ : boxes) {
-			z = bbZ.calculateZOffset(this.boundingBox, z);
+			z = bbZ.calculateZOffset(bb, z);
 		}
 
-		this.boundingBox = this.boundingBox.offsetCopy(0d, 0d, z);
+		bb.offset(0d, 0d, z);
 
 		if (this.stepHeight > 0.0f && wantedVertically && (bx != x || bz != z)) {
-			double bx2 = x;
-			double by2 = y;
-			double bz2 = z;
-
+			double cx = x;
+			double cy = y;
+			double cz = z;
+			x = bx;
 			y = this.stepHeight;
+			z = bz;
 
-			this.boundingBox = beforeBB;
+			AxisAlignedBB stepBB = this.boundingBox.copy();
 
-			AxisAlignedBB beforeBB2 = this.boundingBox.copy();
+			List<AxisAlignedBB> stepList = this.getWorld().getCollisionBoxes(stepBB.copy().addCoord(x, y, z));
 
-			List<AxisAlignedBB> boxes2 = this.world.getCollisionBoxes(this.boundingBox.addCoord(bx, y, bz));
-
-			AxisAlignedBB wbb = this.boundingBox.copy();
-			AxisAlignedBB bbn = wbb.addCoord(bx, 0d, bz);
-
-			double wy = y;
-
-			for (AxisAlignedBB bbnY : boxes2) {
-				wy = bbnY.calculateYOffset(bbn, wy);
+			for (AxisAlignedBB bbY : stepList) {
+				y = bbY.calculateYOffset(stepBB, y);
 			}
 
-			wbb = wbb.offsetCopy(0d, wy, 0d);
-			double wx = bx;
+			stepBB.offset(0d, y, 0d);
 
-			for (AxisAlignedBB bbnX : boxes2) {
-				wx = bbnX.calculateXOffset(wbb, wx);
+			for (AxisAlignedBB bbX : stepList) {
+				x = bbX.calculateXOffset(stepBB, x);
 			}
 
-			wbb = wbb.offsetCopy(wx, 0d, 0d);
-			double wz = bz;
+			stepBB.offset(x, 0d, 0d);
 
-			for (AxisAlignedBB bbnZ : boxes2) {
-				wz = bbnZ.calculateZOffset(wbb, wz);
+			for (AxisAlignedBB bbZ : stepList) {
+				z = bbZ.calculateZOffset(stepBB, z);
 			}
 
-			wbb = wbb.offsetCopy(0d, 0d, wz);
+			stepBB.offset(0d, 0d, z);
 
-			AxisAlignedBB wbbf = this.boundingBox.copy();
-			double wyf = y;
-
-			for (AxisAlignedBB bbnfY : boxes2) {
-				wyf = bbnfY.calculateYOffset(wbbf, wyf);
+			double reverseY = -y;
+			for (AxisAlignedBB bbRY : stepList) {
+				reverseY = bbRY.calculateYOffset(stepBB, reverseY);
 			}
 
-			wbbf = wbbf.offsetCopy(0d, wyf, 0d);
-			double wxf = bx;
+			y += reverseY;
 
-			for (AxisAlignedBB bbnfX : boxes2) {
-				wxf = bbnfX.calculateXOffset(wbbf, wxf);
-			}
+			stepBB.offset(0d, reverseY, 0d);
 
-			wbbf = wbbf.offsetCopy(wxf, 0d, 0d);
-			double wzf = bz;
-
-			for (AxisAlignedBB bbnfZ : boxes2) {
-				wzf = bbnfZ.calculateZOffset(wbbf, wzf);
-			}
-
-			wbbf = wbbf.offsetCopy(0d, 0d, wzf);
-			double d2 = wx * wx + wz * wz;
-			double d1 = wxf * wxf + wzf * wzf;
-
-			if (d2 > d1) {
-				x = wx;
-				z = wz;
-				y = -wy;
-				this.boundingBox = wbb;
+			if ((cx * cx + cz * cz) >= (x * x + z * z)) {
+				x = cx;
+				y = cy;
+				z = cz;
 			} else {
-				x = wxf;
-				z = wzf;
-				y = -wyf;
-				this.boundingBox = wbbf;
-			}
-
-			for (AxisAlignedBB fbb : boxes2) {
-				y = fbb.calculateYOffset(this.boundingBox, y);
-			}
-
-			this.boundingBox = this.boundingBox.offsetCopy(0d, y, 0d);
-
-			if (bx2 * bx2 + bz2 * bz2 > x * x + z * z) {
-				x = bx2;
-				y = by2;
-				z = bz2;
-				this.boundingBox = beforeBB2;
+				bb = stepBB;
 			}
 		}
+
+		this.boundingBox = bb;
 
 		this.resetPositionToBoundingBox();
 
@@ -550,7 +407,7 @@ public class MinecraftEntityLiving {
 		}
 
 		if (by != y) {
-			this.motion.y = 0d; // fixme: is this right?
+			this.motion.y = 0d;
 		}
 	}
 }
