@@ -9,5 +9,5 @@ abstract public class MineleftPacket implements Packet {
 		return this.getClass().getSimpleName();
 	}
 
-	abstract @NotNull ProtocolIds getProtocolId();
+	public abstract @NotNull ProtocolIds getProtocolId();
 }

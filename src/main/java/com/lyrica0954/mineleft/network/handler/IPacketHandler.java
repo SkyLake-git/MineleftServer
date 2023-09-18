@@ -15,4 +15,8 @@ public interface IPacketHandler {
 	void handlePlayerAuthInput(PacketPlayerAuthInput packet) throws PacketHandlingException;
 
 	void handleBlockMappings(PacketBlockMappings packet) throws PacketHandlingException;
+
+	void handleSetPlayerFlags(PacketSetPlayerFlags packet) throws PacketHandlingException;
+
+	void handleSetPlayerAttribute(PacketSetPlayerAttribute packet) throws PacketHandlingException;
 }

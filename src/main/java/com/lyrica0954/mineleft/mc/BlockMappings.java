@@ -1,19 +1,32 @@
 package com.lyrica0954.mineleft.mc;
 
+import net.intelie.tinymap.TinyMap;
+import net.intelie.tinymap.TinyMapBuilder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class BlockMappings {
 
-	protected HashMap<Integer, Block> blocks;
+	private static final Block NULL_BLOCK;
 
-	public BlockMappings() {
-		this.blocks = new HashMap<>();
+	static {
+		NULL_BLOCK = new Block(VanillaBlockNetworkIds.AIR, "minecraft:air");
 	}
 
-	public void register(Block block) {
-		this.blocks.put(block.getNetworkId(), block);
+	protected Map<Integer, Block> blocks;
+
+	protected BlockMappings(Map<Integer, Block> blocks) {
+		this.blocks = blocks;
+	}
+
+	public static BlockMappings none() {
+		return new BlockMappings(new HashMap<>());
+	}
+
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	public @Nullable Block get(int networkId) {
@@ -21,10 +34,28 @@ public class BlockMappings {
 	}
 
 	public Block getNullBlock() {
-		return new Block(VanillaBlockNetworkIds.AIR, "minecraft:air");
+		return NULL_BLOCK;
 	}
 
-	public HashMap<Integer, Block> getBlocks() {
+	public Map<Integer, Block> getRegistered() {
 		return blocks;
+	}
+
+	public static class Builder {
+
+		protected TinyMapBuilder<Integer, Block> mapBuilder;
+
+		private Builder() {
+			this.mapBuilder = TinyMap.builder();
+		}
+
+		public void register(Block block) {
+			this.mapBuilder.put(block.getNetworkId(), block);
+		}
+
+		public BlockMappings build() {
+			return new BlockMappings(this.mapBuilder.build());
+		}
+
 	}
 }

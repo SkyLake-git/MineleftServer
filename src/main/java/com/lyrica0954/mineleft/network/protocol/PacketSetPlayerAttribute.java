@@ -1,6 +1,5 @@
 package com.lyrica0954.mineleft.network.protocol;
 
-import com.lyrica0954.mineleft.mc.math.Vec3d;
 import com.lyrica0954.mineleft.utils.CodecHelper;
 import com.lyrica0954.protocol.PacketBounds;
 import io.netty.buffer.ByteBuf;
@@ -8,36 +7,32 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class PacketPlayerTeleport extends MineleftPacket {
+public class PacketSetPlayerAttribute extends MineleftPacket {
 
 	public UUID playerUuid;
 
-	public String worldName;
+	public float movementSpeed;
 
-	public Vec3d position;
+	@Override
+	@NotNull
+	public ProtocolIds getProtocolId() {
+		return ProtocolIds.SET_PLAYER_ATTRIBUTE;
+	}
 
 	@Override
 	public void encode(ByteBuf out) throws Exception {
 		CodecHelper.writeUUID(out, this.playerUuid);
-		CodecHelper.writeUTFSequence(out, this.worldName);
-		CodecHelper.writeVec3d(out, this.position);
+		out.writeFloat(this.movementSpeed);
 	}
 
 	@Override
 	public void decode(ByteBuf in) throws Exception {
 		this.playerUuid = CodecHelper.readUUID(in);
-		this.worldName = CodecHelper.readUTFSequence(in);
-		this.position = CodecHelper.readVec3d(in);
+		this.movementSpeed = in.readFloat();
 	}
 
 	@Override
 	public @NotNull PacketBounds bounds() {
 		return PacketBounds.SERVER;
-	}
-
-	@Override
-	@NotNull
-	public ProtocolIds getProtocolId() {
-		return ProtocolIds.PLAYER_TELEPORT;
 	}
 }

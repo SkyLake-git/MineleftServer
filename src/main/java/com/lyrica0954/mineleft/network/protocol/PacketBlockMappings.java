@@ -37,7 +37,8 @@ public class PacketBlockMappings extends MineleftPacket {
 	}
 
 	@Override
-	@NotNull ProtocolIds getProtocolId() {
+	@NotNull
+	public ProtocolIds getProtocolId() {
 		return ProtocolIds.BLOCK_MAPPINGS;
 	}
 }

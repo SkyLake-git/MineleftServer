@@ -1,13 +1,15 @@
 package com.lyrica0954.mineleft.network.handler;
 
+import com.lyrica0954.mineleft.MortonCode;
 import com.lyrica0954.mineleft.mc.Block;
-import com.lyrica0954.mineleft.mc.level.Chunk;
-import com.lyrica0954.mineleft.mc.level.World;
+import com.lyrica0954.mineleft.mc.BlockMappings;
+import com.lyrica0954.mineleft.mc.level.*;
 import com.lyrica0954.mineleft.network.MineleftSession;
 import com.lyrica0954.mineleft.network.NetworkConverters;
 import com.lyrica0954.mineleft.network.chunk.ChunkDeserializer;
 import com.lyrica0954.mineleft.network.player.MineleftPlayerProfile;
 import com.lyrica0954.mineleft.network.protocol.*;
+import com.lyrica0954.mineleft.network.protocol.types.ChunkSendingMethod;
 
 import java.util.Map;
 
@@ -37,7 +39,7 @@ public class MineleftPacketHandler implements IPacketHandler {
 	public void handlePlayerTeleport(PacketPlayerTeleport packet) throws PacketHandlingException {
 		World world = this.session.getWorldManager().getWorld(packet.worldName);
 
-		if (world == null) {
+		if (world == null && this.session.getChunkSendingMethod() != ChunkSendingMethod.ALTERNATE) {
 			throw new PacketHandlingException("Unknown world");
 		}
 
@@ -47,7 +49,10 @@ public class MineleftPacketHandler implements IPacketHandler {
 			return;
 		}
 
-		player.setWorld(world);
+		if (world != null) {
+			player.setWorld(world);
+		}
+
 		player.setPosition(packet.position.copy());
 	}
 
@@ -57,6 +62,9 @@ public class MineleftPacketHandler implements IPacketHandler {
 
 		this.session.getLogger().info("Configured.");
 		this.session.getLogger().info("Default world name: " + packet.defaultWorldName);
+		this.session.getLogger().info("Chunk sending method: " + packet.chunkSendingMethod);
+
+		this.session.setChunkSendingMethod(packet.chunkSendingMethod);
 	}
 
 	@Override
@@ -92,15 +100,59 @@ public class MineleftPacketHandler implements IPacketHandler {
 			return;
 		}
 
-		player.onAuthInput(packet.inputData);
+		TemporaryWorld temporaryWorld = null;
+		if (packet.nearbyBlocks.size() > 0) {
+			BlockPalette.Builder builder = BlockPalette.builder();
+			for (Map.Entry<Long, PaletteBlock> data : packet.nearbyBlocks.entrySet()) {
+				int[] v = MortonCode.get3D().decode(data.getKey());
+				builder.set(v[0], v[1], v[2], data.getValue());
+			}
+
+			temporaryWorld = new TemporaryWorld(builder);
+		}
+
+		player.onAuthInput(packet.inputData, packet.requestedPosition, temporaryWorld);
 	}
 
 	@Override
 	public void handleBlockMappings(PacketBlockMappings packet) throws PacketHandlingException {
+		if (NetworkConverters.getInstance().isBlockMappingsInitialized()) {
+			throw new PacketHandlingException("Block mappings already initialized");
+		}
+
+		BlockMappings.Builder builder = BlockMappings.builder();
+
 		for (Map.Entry<Integer, Block> entry : packet.mapping.entrySet()) {
-			NetworkConverters.getInstance().getBlockMappings().register(entry.getValue());
+			builder.register(entry.getValue());
 
 			this.session.getLogger().info("Registered block mapping " + entry.getKey() + " -> " + entry.getValue().getIdentifier());
 		}
+
+		NetworkConverters.getInstance().initializeBlockMappings(builder.build());
+	}
+
+	@Override
+	public void handleSetPlayerFlags(PacketSetPlayerFlags packet) throws PacketHandlingException {
+		MineleftPlayerProfile player = this.session.getPlayers().get(packet.playerUuid);
+
+		if (player == null) {
+			return;
+		}
+
+		// fixme: ugly method name
+		player.getPlayerFlags().setFlags(packet.flags);
+
+		player.getLogger().info("Updated player flags: " + packet.flags);
+	}
+
+	@Override
+	public void handleSetPlayerAttribute(PacketSetPlayerAttribute packet) throws PacketHandlingException {
+		MineleftPlayerProfile player = this.session.getPlayers().get(packet.playerUuid);
+
+		if (player == null) {
+			return;
+		}
+
+		player.setBaseMovementSpeed(packet.movementSpeed);
 	}
 }

@@ -1,6 +1,6 @@
 package com.lyrica0954.mineleft.network.protocol;
 
-import com.lyrica0954.mineleft.utils.ByteBufHelper;
+import com.lyrica0954.mineleft.utils.CodecHelper;
 import com.lyrica0954.protocol.PacketBounds;
 import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.NotNull;
@@ -9,14 +9,18 @@ public class PacketConfiguration extends MineleftPacket {
 
 	public String defaultWorldName;
 
+	public int chunkSendingMethod;
+
 	@Override
 	public void encode(ByteBuf out) throws Exception {
-		ByteBufHelper.writeStandardCharSequence(out, this.defaultWorldName);
+		CodecHelper.writeUTFSequence(out, this.defaultWorldName);
+		out.writeInt(this.chunkSendingMethod);
 	}
 
 	@Override
 	public void decode(ByteBuf in) throws Exception {
-		this.defaultWorldName = ByteBufHelper.readStandardCharSequence(in);
+		this.defaultWorldName = CodecHelper.readUTFSequence(in);
+		this.chunkSendingMethod = in.readInt();
 	}
 
 	@Override
@@ -25,7 +29,8 @@ public class PacketConfiguration extends MineleftPacket {
 	}
 
 	@Override
-	@NotNull ProtocolIds getProtocolId() {
+	@NotNull
+	public ProtocolIds getProtocolId() {
 		return ProtocolIds.CONFIGURATION;
 	}
 }

@@ -31,7 +31,7 @@ public class MineleftServerBootstrap {
 
 			bootstrap.group(mainGroup)
 					.channel(NioServerSocketChannel.class)
-					.childHandler(new NettyChannelInitializer(packetPool, sessionManager))
+					.childHandler(new NettyChannelInitializer<>(packetPool, sessionManager))
 					.childOption(ChannelOption.SO_KEEPALIVE, true);
 
 			ChannelFuture future = bootstrap.bind(port);
@@ -50,5 +50,7 @@ public class MineleftServerBootstrap {
 			logger.info("Socket closed, closing event loop");
 			mainGroup.shutdownGracefully();
 		}
+
+		logger.info("Server closed");
 	}
 }

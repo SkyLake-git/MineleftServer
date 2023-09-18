@@ -1,12 +1,12 @@
 package com.lyrica0954.mineleft.mc;
 
-import com.lyrica0954.mineleft.utils.ByteBufHelper;
+import com.lyrica0954.mineleft.utils.CodecHelper;
 import io.netty.buffer.ByteBuf;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
 
-public class BlockStateData {
+public class BlockStateData implements Cloneable {
 
 	protected AbstractMap<String, Integer> integerMap;
 
@@ -15,12 +15,17 @@ public class BlockStateData {
 	}
 
 	public void read(ByteBuf buf) throws Exception {
-		this.integerMap = ByteBufHelper.produceMap(buf, () -> new AbstractMap.SimpleEntry<>(ByteBufHelper.readStandardCharSequence(buf), buf.readInt()));
+		this.integerMap = CodecHelper.produceMap(buf, () -> new AbstractMap.SimpleEntry<>(CodecHelper.readUTFSequence(buf), buf.readInt()));
+	}
+
+	@Override
+	protected BlockStateData clone() throws CloneNotSupportedException {
+		return (BlockStateData) super.clone();
 	}
 
 	public void write(ByteBuf buf) throws Exception {
-		ByteBufHelper.consumeMap(buf, this.integerMap, (entry) -> {
-			ByteBufHelper.writeStandardCharSequence(buf, entry.getKey());
+		CodecHelper.consumeMap(buf, this.integerMap, (entry) -> {
+			CodecHelper.writeUTFSequence(buf, entry.getKey());
 			buf.writeInt(entry.getValue());
 		});
 	}
