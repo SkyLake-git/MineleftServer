@@ -1,7 +1,6 @@
 package com.lyrica0954.mineleft.network.player;
 
 import com.lyrica0954.mineleft.mc.level.WorldInterface;
-import com.lyrica0954.mineleft.mc.math.AxisAlignedBB;
 import com.lyrica0954.mineleft.mc.math.Vec3d;
 
 public class MinecraftClientPlayer extends MinecraftEntityLiving {
@@ -18,8 +17,8 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 
 	protected float lastMovementForward;
 
-	public MinecraftClientPlayer(WorldInterface world, Vec3d position, AxisAlignedBB boundingBox) {
-		super(world, position, boundingBox);
+	public MinecraftClientPlayer(WorldInterface world, Vec3d position, double sizeWidth, double sizeHeight) {
+		super(world, position, sizeWidth, sizeHeight);
 		this.keyboardInput = new EntityMovementInput();
 		this.usingItem = false;
 		this.continueSprintTicks = 0;
@@ -71,8 +70,12 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 		}
 
 		//todo: check submerged, food
-		if (!this.isSprinting() && this.keyboardInput.pressingSprint && !this.isUsingItem() && this.isWalking()) {
+		if (!this.isSprinting() && this.keyboardInput.pressingSprint && !this.isUsingItem()) {
 			this.setSprinting(true);
+		}
+
+		if (this.isSprinting() && (!this.keyboardInput.pressingForward)) {
+			this.setSprinting(false);
 		}
 
 		if (this.touchingWater && this.keyboardInput.sneaking) {
@@ -80,7 +83,7 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 		}
 
 		this.movementSpeed = this.baseMovementSpeed;
-		if (this.isSprinting() || lastSprinting) {
+		if (this.isSprinting()) {
 			this.movementSpeed *= 1.3f;
 		}
 
@@ -102,15 +105,12 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 		}
 
 		this.flyingSpeed = 0.02f;
-		if (this.isSprinting() || sprintAlternate) {
+		if (this.isSprinting() && lastSprinting) {
 			this.flyingSpeed += 0.005999999865889549f;
 		}
 
 		super.updateMovement();
 
-		if (this.isSprinting() && (!this.keyboardInput.pressingSprint || Math.abs(this.lastMovementForward) <= 1e-5f)) {
-			this.setSprinting(false);
-		}
 
 		this.lastMovementForward = this.keyboardInput.movementForward;
 	}

@@ -58,11 +58,17 @@ public class MinecraftEntityLiving {
 
 	protected float actuallyForwardSpeed;
 
-	public MinecraftEntityLiving(WorldInterface world, Vec3d position, AxisAlignedBB boundingBox) {
+	protected double sizeWidth;
+
+	protected double sizeHeight;
+
+	public MinecraftEntityLiving(WorldInterface world, Vec3d position, double sizeWidth, double sizeHeight) {
 		this.position = position;
 		this.motion = new Vec3d();
 		this.rot = new EntityRot();
-		this.boundingBox = boundingBox;
+		this.sizeWidth = sizeWidth;
+		this.sizeHeight = sizeHeight;
+		this.recalculateBoundingBox();
 		this.world = world;
 		this.isCollidedHorizontally = false;
 		this.isCollidedVertically = false;
@@ -81,6 +87,18 @@ public class MinecraftEntityLiving {
 		this.actuallyForwardSpeed = 0.0f;
 		this.touchingWater = false;
 		this.fluidHeights = new HashMap<>();
+	}
+
+	protected void recalculateBoundingBox() {
+		double w = this.sizeWidth;
+		this.boundingBox = new AxisAlignedBB(
+				this.position.x - w / 2d,
+				this.position.y,
+				this.position.z - w / 2d,
+				this.position.x + w / 2d,
+				this.position.y + this.sizeHeight,
+				this.position.z + w / 2d
+		);
 	}
 
 	public boolean isJumping() {
@@ -104,9 +122,8 @@ public class MinecraftEntityLiving {
 	}
 
 	public void setPosition(Vec3d position) {
-		Vec3d diff = position.subtractVector(this.position);
 		this.position = position;
-		this.boundingBox.offset(diff.x, diff.y, diff.z);
+		this.recalculateBoundingBox();
 	}
 
 	public WorldInterface getWorld() {
@@ -123,6 +140,10 @@ public class MinecraftEntityLiving {
 
 	public void setMotion(Vec3d motion) {
 		this.motion = motion.copy();
+	}
+
+	public AxisAlignedBB getBoundingBox() {
+		return boundingBox;
 	}
 
 	public void setMotion(double x, double y, double z) {
@@ -323,7 +344,11 @@ public class MinecraftEntityLiving {
 
 		AxisAlignedBB bb = this.boundingBox.copy();
 
+		System.out.println(bb.toString());
+		System.out.println("collides:");
+
 		for (AxisAlignedBB bbY : boxes) {
+			System.out.println(bbY.toString());
 			y = bbY.calculateYOffset(bb, y);
 		}
 
@@ -406,7 +431,7 @@ public class MinecraftEntityLiving {
 			this.motion.z = 0d;
 		}
 
-		if (by != y) {
+		if (this.isCollidedVertically) {
 			this.motion.y = 0d;
 		}
 	}

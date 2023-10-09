@@ -3,7 +3,6 @@ package com.lyrica0954.mineleft.network.player;
 import com.lyrica0954.mineleft.mc.level.TemporaryWorld;
 import com.lyrica0954.mineleft.mc.level.World;
 import com.lyrica0954.mineleft.mc.level.WorldInterface;
-import com.lyrica0954.mineleft.mc.math.AxisAlignedBB;
 import com.lyrica0954.mineleft.mc.math.Vec3d;
 import com.lyrica0954.mineleft.network.MineleftSession;
 import com.lyrica0954.mineleft.network.protocol.PacketPlayerViolation;
@@ -38,15 +37,7 @@ public class MineleftPlayerProfile {
 		this.info = info;
 		this.position = position;
 		this.world = currentWorld;
-		float w = 1.8f;
-		this.entity = new MinecraftClientPlayer(world, position, new AxisAlignedBB(
-				this.position.x + -w / 2,
-				this.position.y + 0,
-				this.position.z + -w / 2,
-				this.position.x + w / 2,
-				this.position.y + 0.6,
-				this.position.z + w / 2
-		));
+		this.entity = new MinecraftClientPlayer(world, position, 0.6d, 1.8d);
 		this.lastPosition = position;
 		this.logger = LoggerFactory.getLogger(this.session.getLogger().getName() + String.format("[MineleftPlayer: %s] ", info.getName()));
 		this.playerFlags = new CustomFlags(0);
@@ -98,6 +89,7 @@ public class MineleftPlayerProfile {
 		if (temporaryWorld != null) {
 			world = temporaryWorld;
 			this.logger.debug("Using temporary world");
+			this.logger.debug("World blocks: " + temporaryWorld.getPalette().size());
 		} else {
 			world = this.world;
 		}
@@ -106,6 +98,8 @@ public class MineleftPlayerProfile {
 			this.logger.debug("World not ready, ignoring auth input");
 			return;
 		}
+
+		this.entity.setPosition(this.lastPosition);
 
 		this.entity.getRot().yaw = inputData.getRot().yaw;
 		this.entity.getRot().pitch = inputData.getRot().pitch;
@@ -116,7 +110,7 @@ public class MineleftPlayerProfile {
 		this.entity.keyboardInput.pressingForward = inputData.hasFlag(InputFlags.UP);
 		this.entity.keyboardInput.pressingLeft = inputData.hasFlag(InputFlags.LEFT);
 		this.entity.keyboardInput.pressingRight = inputData.hasFlag(InputFlags.RIGHT);
-		this.entity.keyboardInput.pressingSprint = inputData.hasFlag(InputFlags.SPRINT) || this.playerFlags.hasFlag(PlayerFlags.SPRINTING);
+		this.entity.keyboardInput.pressingSprint = this.playerFlags.hasFlag(PlayerFlags.SPRINTING) || inputData.hasFlag(InputFlags.SPRINT);
 
 		float baseMovementSpeed = this.getBaseMovementSpeed();
 
@@ -137,14 +131,16 @@ public class MineleftPlayerProfile {
 		this.logger.debug("paired sneak: " + (this.playerFlags.hasFlag(PlayerFlags.SNEAKING) ? "true" : "false"));
 		this.logger.debug("sprint: " + (this.entity.keyboardInput.pressingSprint ? "true" : "false"));
 		this.logger.debug("sneak: " + (this.entity.keyboardInput.sneaking ? "true" : "false"));
+		this.logger.debug("movement speed: " + this.entity.getMovementSpeed());
 		this.logger.debug("base movement speed: " + baseMovementSpeed);
 		this.logger.debug("motion: " + this.entity.getMotion().toString());
 		this.logger.debug("delta: " + inputData.getDelta().toString());
 		this.logger.debug("w: " + (this.entity.keyboardInput.pressingForward ? "true" : "false"));
 		this.logger.debug("sideways: " + inputData.getMoveVecX() + " forward: " + inputData.getMoveVecZ());
-		this.logger.debug("e: " + this.entity.getPosition().toString() + " p: " + this.position.toString());
+		this.logger.debug("e: " + this.entity.getPosition().toString() + " p: " + requestedPosition);
 		this.logger.debug("y delta: " + (this.entity.getMotion().y - inputData.getDelta().y));
 		this.logger.debug("motion delta: " + motionDiff);
+		this.logger.debug("pos delta: " + this.entity.getPosition().subtractVector(requestedPosition).toString());
 
 		if (motionDiff.length() > 0.2d) {
 			PacketPlayerViolation pk = new PacketPlayerViolation();
@@ -154,10 +150,6 @@ public class MineleftPlayerProfile {
 			this.session.sendPacket(pk);
 
 			this.session.getLogger().debug("violation");
-			this.entity.setPosition(requestedPosition.copy());
-
-			this.session.getLogger().debug("Accepted requested position...");
-
 			// ブロックの変化に対応できてないのを検証する
 		}
 	}
