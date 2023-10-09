@@ -9,7 +9,8 @@ public enum ProtocolIds {
 	BLOCK_MAPPINGS(5),
 	SET_PLAYER_FLAGS(6),
 	SET_PLAYER_ATTRIBUTE(7),
-	PLAYER_VIOLATION(8);
+	PLAYER_VIOLATION(8),
+	SET_PLAYER_MOTION(9);
 
 
 	public final short id;

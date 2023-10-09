@@ -23,6 +23,7 @@ public class MineleftPacketPool implements IPacketPool {
 		this.register(ProtocolIds.BLOCK_MAPPINGS.id, new PacketBlockMappings());
 		this.register(ProtocolIds.SET_PLAYER_FLAGS.id, new PacketSetPlayerFlags());
 		this.register(ProtocolIds.SET_PLAYER_ATTRIBUTE.id, new PacketSetPlayerAttribute());
+		this.register(ProtocolIds.SET_PLAYER_MOTION.id, new PacketSetPlayerMotion());
 	}
 
 	public void register(short protocolId, Packet packet) {
