@@ -22,6 +22,7 @@ dependencies {
     implementation 'org.jetbrains:annotations:23.0.0'
     implementation group: 'com.lyrica0954', name: 'protocol-base', version: '1.0.4'
     implementation 'net.intelie.tinymap:tinymap:0.7'
+    implementation 'org.decimal4j:decimal4j:1.0.3'
 }
 
 test {
