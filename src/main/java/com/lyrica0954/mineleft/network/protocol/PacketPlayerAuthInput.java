@@ -29,7 +29,7 @@ public class PacketPlayerAuthInput extends MineleftPacket {
 		this.inputData.write(out);
 		CodecHelper.writeVec3d(out, this.requestedPosition);
 
-		boolean withNearbyBlocks = this.nearbyBlocks.size() > 0;
+		boolean withNearbyBlocks = !this.nearbyBlocks.isEmpty();
 		out.writeBoolean(withNearbyBlocks);
 
 		if (withNearbyBlocks) {

@@ -101,7 +101,7 @@ public class MineleftPacketHandler implements IPacketHandler {
 		}
 
 		TemporaryWorld temporaryWorld = null;
-		if (packet.nearbyBlocks.size() > 0) {
+		if (!packet.nearbyBlocks.isEmpty()) {
 			BlockPalette.Builder builder = BlockPalette.builder();
 			for (Map.Entry<Long, PaletteBlock> data : packet.nearbyBlocks.entrySet()) {
 				int[] v = MortonCode.get3D().decode(data.getKey());
@@ -111,7 +111,7 @@ public class MineleftPacketHandler implements IPacketHandler {
 			temporaryWorld = new TemporaryWorld(builder);
 		}
 
-		player.onAuthInput(packet.inputData, packet.requestedPosition, temporaryWorld);
+		player.onAuthInput(packet.inputData, packet.requestedPosition.copy().subtract(0, 1.62, 0).round(4), temporaryWorld);
 	}
 
 	@Override
@@ -125,8 +125,11 @@ public class MineleftPacketHandler implements IPacketHandler {
 		for (Map.Entry<Integer, Block> entry : packet.mapping.entrySet()) {
 			builder.register(entry.getValue());
 
-			this.session.getLogger().info("Registered block mapping " + entry.getKey() + " -> " + entry.getValue().getIdentifier());
+			this.session.getLogger().info("Registered block mapping " + entry.getKey() + " -> " + entry.getValue().toString());
 		}
+
+		builder.setNullBlock(packet.nullBlockNetworkId);
+		this.session.getLogger().info("Null block identifier: " + packet.nullBlockNetworkId);
 
 		NetworkConverters.getInstance().initializeBlockMappings(builder.build());
 	}
@@ -154,5 +157,7 @@ public class MineleftPacketHandler implements IPacketHandler {
 		}
 
 		player.setBaseMovementSpeed(packet.movementSpeed);
+
+		player.getLogger().info("Updated movement speed: " + packet.movementSpeed);
 	}
 }
