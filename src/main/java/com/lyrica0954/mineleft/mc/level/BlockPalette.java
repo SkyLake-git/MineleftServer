@@ -1,7 +1,7 @@
 package com.lyrica0954.mineleft.mc.level;
 
 import com.lyrica0954.mineleft.MortonCode;
-import com.lyrica0954.mineleft.mc.VanillaBlockNetworkIds;
+import com.lyrica0954.mineleft.network.NetworkConverters;
 import net.intelie.tinymap.ObjectCache;
 import net.intelie.tinymap.TinyMap;
 import net.intelie.tinymap.TinyMapBuilder;
@@ -9,6 +9,7 @@ import net.intelie.tinymap.util.ObjectOptimizer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class BlockPalette {
@@ -35,6 +36,14 @@ public class BlockPalette {
 		return block.networkId;
 	}
 
+	public int size() {
+		return this.palette.size();
+	}
+
+	public Set<Map.Entry<Long, Integer>> getAll() {
+		return palette.entrySet();
+	}
+
 	public synchronized void set(int x, int y, int z, PaletteBlock block) {
 		this.modify(ctx -> ctx.set(x, y, z, block));
 	}
@@ -50,7 +59,7 @@ public class BlockPalette {
 	}
 
 	public PaletteBlock get(int x, int y, int z) {
-		return parse(this.palette.getOrDefault(MortonCode.get3D().encode(x, y, z), VanillaBlockNetworkIds.AIR));
+		return parse(this.palette.getOrDefault(MortonCode.get3D().encode(x, y, z), NetworkConverters.getInstance().getBlockMappings().getNullBlock().getNetworkId()));
 	}
 
 	public static class ModifyContext {
