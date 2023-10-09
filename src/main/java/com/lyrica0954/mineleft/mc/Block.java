@@ -95,4 +95,9 @@ public class Block implements BlockInfo {
 	public float getFriction() {
 		return friction;
 	}
+
+	@Override
+	public String toString() {
+		return "Block(nid=%d, identifier=%s, friction=%f, flags=%d, boxes=%d)".formatted(this.networkId, this.identifier, this.friction, this.flags, this.collisionBoxes.size());
+	}
 }
