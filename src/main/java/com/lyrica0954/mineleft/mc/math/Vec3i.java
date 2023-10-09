@@ -14,6 +14,11 @@ public class Vec3i {
 		this.z = z;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("Vec3i(x=%d,y=%d,z=%d)", this.x, this.y, this.z);
+	}
+
 	public Vec3d toDouble() {
 		return new Vec3d(this.x, this.y, this.z);
 	}

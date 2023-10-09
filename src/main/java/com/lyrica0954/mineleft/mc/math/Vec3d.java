@@ -1,5 +1,7 @@
 package com.lyrica0954.mineleft.mc.math;
 
+import org.decimal4j.util.DoubleRounder;
+
 public class Vec3d {
 
 	public double x;
@@ -22,6 +24,10 @@ public class Vec3d {
 
 	public static Vec3d zero() {
 		return new Vec3d(0, 0, 0);
+	}
+
+	public Vec3d round(int n) {
+		return new Vec3d(DoubleRounder.round(this.x, n), DoubleRounder.round(this.y, n), DoubleRounder.round(this.z, n));
 	}
 
 	@Override
