@@ -9,7 +9,6 @@ import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.AbstractMap;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,15 +28,10 @@ public class PacketPlayerAuthInput extends MineleftPacket {
 		this.inputData.write(out);
 		CodecHelper.writeVec3d(out, this.requestedPosition);
 
-		boolean withNearbyBlocks = !this.nearbyBlocks.isEmpty();
-		out.writeBoolean(withNearbyBlocks);
-
-		if (withNearbyBlocks) {
-			CodecHelper.consumeMap(out, this.nearbyBlocks, (entry) -> {
-				out.writeLong(entry.getKey());
-				out.writeInt(entry.getValue().getNetworkId());
-			});
-		}
+		CodecHelper.consumeMap(out, this.nearbyBlocks, (entry) -> {
+			out.writeLong(entry.getKey());
+			out.writeInt(entry.getValue().getNetworkId());
+		});
 	}
 
 	@Override
@@ -49,10 +43,7 @@ public class PacketPlayerAuthInput extends MineleftPacket {
 		this.inputData = data;
 		this.requestedPosition = CodecHelper.readVec3d(in);
 
-		this.nearbyBlocks = new Hashtable<>();
-		if (in.readBoolean()) {
-			this.nearbyBlocks = CodecHelper.produceMap(in, () -> new AbstractMap.SimpleEntry<>(in.readLong(), new PaletteBlock(in.readInt())));
-		}
+		this.nearbyBlocks = CodecHelper.produceMap(in, () -> new AbstractMap.SimpleEntry<>(in.readLong(), new PaletteBlock(in.readInt())));
 	}
 
 	@Override

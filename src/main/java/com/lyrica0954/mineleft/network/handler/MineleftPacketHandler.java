@@ -101,7 +101,7 @@ public class MineleftPacketHandler implements IPacketHandler {
 		}
 
 		TemporaryWorld temporaryWorld = null;
-		if (!packet.nearbyBlocks.isEmpty()) {
+		if (this.session.getChunkSendingMethod() == ChunkSendingMethod.ALTERNATE) {
 			BlockPalette.Builder builder = BlockPalette.builder();
 			for (Map.Entry<Long, PaletteBlock> data : packet.nearbyBlocks.entrySet()) {
 				int[] v = MortonCode.get3D().decode(data.getKey());
@@ -159,5 +159,17 @@ public class MineleftPacketHandler implements IPacketHandler {
 		player.setBaseMovementSpeed(packet.movementSpeed);
 
 		player.getLogger().info("Updated movement speed: " + packet.movementSpeed);
+	}
+
+	@Override
+	public void handleSetPlayerMotion(PacketSetPlayerMotion packet) throws PacketHandlingException {
+		MineleftPlayerProfile player = this.session.getPlayers().get(packet.playerUuid);
+
+		if (player == null) {
+			return;
+		}
+
+		player.getEntity().setMotion(packet.motion);
+		player.getLogger().info("Updated motion: " + packet.motion.toString());
 	}
 }
