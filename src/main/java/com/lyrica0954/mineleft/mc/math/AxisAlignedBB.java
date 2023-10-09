@@ -38,6 +38,17 @@ public class AxisAlignedBB {
 		return new AxisAlignedBB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
 	}
 
+	public AxisAlignedBB expand(double x, double y, double z) {
+		this.minX -= x;
+		this.minY -= y;
+		this.minZ -= z;
+		this.maxX += x;
+		this.maxY += y;
+		this.maxZ += z;
+
+		return this;
+	}
+
 	public AxisAlignedBB offset(double x, double y, double z) {
 		this.minX += x;
 		this.minY += y;
@@ -161,7 +172,7 @@ public class AxisAlignedBB {
 	}
 
 	public boolean intersectsWith(AxisAlignedBB bb) {
-		double epsilon = 0.0001d;
+		double epsilon = 0.00001d;
 		if (bb.maxX - this.minX > epsilon && this.maxX - bb.minX > epsilon) {
 			if (bb.maxY - this.minY > epsilon && this.maxY - bb.minY > epsilon) {
 				return bb.maxZ - this.minZ > epsilon && this.maxZ - bb.minZ > epsilon;
