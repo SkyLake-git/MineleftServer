@@ -22,6 +22,10 @@ public class TemporaryWorld implements WorldInterface {
 		this.palette = builder.build();
 	}
 
+	public BlockPalette getPalette() {
+		return palette;
+	}
+
 	@Override
 	public boolean isBlockLoaded(int x, int y, int z) {
 		return this.palette.get(x, y, z) != null;
