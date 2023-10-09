@@ -3,6 +3,7 @@ package com.lyrica0954.mineleft.utils;
 import com.lyrica0954.mineleft.mc.math.Vec3d;
 import com.lyrica0954.mineleft.mc.math.Vec3i;
 import io.netty.buffer.ByteBuf;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -19,6 +20,22 @@ public class CodecHelper {
 		}
 
 		return list;
+	}
+
+	public static <T> void writeOptional(ByteBuf buf, @Nullable T obj, ThrowingConsumer<T> consumer) throws Exception {
+		buf.writeBoolean(obj != null);
+
+		if (obj != null) {
+			consumer.accept(obj);
+		}
+	}
+
+	public static <T> T readOptional(ByteBuf buf, ThrowingSupplier<T> supplier) throws Exception {
+		if (buf.readBoolean()) {
+			return supplier.get();
+		}
+
+		return null;
 	}
 
 	public static <K, V> AbstractMap<K, V> produceMap(ByteBuf buf, ThrowingSupplier<Map.Entry<K, V>> supplier) throws Exception {
