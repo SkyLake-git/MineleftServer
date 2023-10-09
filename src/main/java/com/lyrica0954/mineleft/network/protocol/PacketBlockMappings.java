@@ -12,12 +12,16 @@ public class PacketBlockMappings extends MineleftPacket {
 
 	public HashMap<Integer, Block> mapping;
 
+	public int nullBlockNetworkId;
+
 	@Override
 	public void encode(ByteBuf out) throws Exception {
 		out.writeInt(this.mapping.size());
 		for (Map.Entry<Integer, Block> entry : mapping.entrySet()) {
 			entry.getValue().write(out);
 		}
+
+		out.writeInt(this.nullBlockNetworkId);
 	}
 
 	@Override
@@ -29,6 +33,8 @@ public class PacketBlockMappings extends MineleftPacket {
 			block.read(in);
 			this.mapping.put(block.getNetworkId(), block);
 		}
+
+		this.nullBlockNetworkId = in.readInt();
 	}
 
 	@Override
