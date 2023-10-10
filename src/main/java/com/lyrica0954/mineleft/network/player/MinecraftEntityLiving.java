@@ -254,7 +254,7 @@ public class MinecraftEntityLiving {
 		Vec3d motion = this.getMotion();
 		this.setMotion(motion.x, f, motion.z);
 
-		if (this.sprinting) {
+		if (this.isSprinting()) {
 			float g = this.rot.yaw * ((float) Math.PI / 180);
 
 			this.setMotion(this.getMotion().add(-Math.sin(g) * 0.2f, 0.0, Math.cos(g) * 0.2f));

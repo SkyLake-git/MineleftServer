@@ -7,13 +7,16 @@ public class MinecraftPhysics {
 	public static Vec3d movementInputToVelocity(Vec3d input, float speed, float yaw) {
 		double d = input.lengthSquared();
 
+		System.out.println("Input: " + input);
+		System.out.println("Speed: " + speed);
+
 		if (d < 1.0e-7) {
 			return Vec3d.zero();
 		}
 
 		Vec3d move = input.multiply(speed);
 
-		System.out.println("Input: " + move.toString());
+		System.out.println("Move: " + move);
 
 		double f = Math.sin(yaw * ((float) Math.PI / 180));
 		double g = Math.cos(yaw * ((float) Math.PI / 180));

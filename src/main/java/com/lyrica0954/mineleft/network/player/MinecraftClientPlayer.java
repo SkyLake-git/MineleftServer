@@ -74,7 +74,7 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 			this.setSprinting(true);
 		}
 
-		if (this.isSprinting() && (!this.keyboardInput.pressingForward)) {
+		if (this.isSprinting() && !this.keyboardInput.pressingSprint) {
 			this.setSprinting(false);
 		}
 
@@ -104,13 +104,17 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 			this.sidewaysSpeed = 0f;
 		}
 
+
 		this.flyingSpeed = 0.02f;
 		if (this.isSprinting() && lastSprinting) {
 			this.flyingSpeed += 0.005999999865889549f;
 		}
 
-		super.updateMovement();
+		if (this.isSprinting() && (!this.keyboardInput.pressingForward)) {
+			this.setSprinting(false);
+		}
 
+		super.updateMovement();
 
 		this.lastMovementForward = this.keyboardInput.movementForward;
 	}
