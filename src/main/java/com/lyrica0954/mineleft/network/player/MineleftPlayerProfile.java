@@ -30,6 +30,10 @@ public class MineleftPlayerProfile {
 
 	protected CustomFlags playerFlags;
 
+	protected CustomFlags lastPlayerFlags;
+
+	protected InputData lastInputData;
+
 	protected float baseMovementSpeed;
 
 	public MineleftPlayerProfile(MineleftSession session, PlayerInfo info, Vec3d position, World currentWorld) {
@@ -41,6 +45,8 @@ public class MineleftPlayerProfile {
 		this.lastPosition = position;
 		this.logger = LoggerFactory.getLogger(this.session.getLogger().getName() + String.format("[MineleftPlayer: %s] ", info.getName()));
 		this.playerFlags = new CustomFlags(0);
+		this.lastPlayerFlags = new CustomFlags(0);
+		this.lastInputData = null;
 	}
 
 	public MinecraftEntityLiving getEntity() {
@@ -104,7 +110,22 @@ public class MineleftPlayerProfile {
 		this.entity.getRot().yaw = inputData.getRot().yaw;
 		this.entity.getRot().pitch = inputData.getRot().pitch;
 
-		this.entity.keyboardInput.sneaking = inputData.hasFlag(InputFlags.SNEAK);
+		boolean lastSneaking;
+		if (this.lastInputData == null) {
+			lastSneaking = false;
+		} else {
+			lastSneaking = this.lastInputData.hasFlag(InputFlags.SNEAK);
+		}
+
+		boolean pairedSneaking = this.playerFlags.hasFlag(PlayerFlags.SNEAKING);
+
+		this.entity.keyboardInput.sneaking = inputData.hasFlag(InputFlags.SNEAK) || lastSneaking;
+
+		if (!lastSneaking && !inputData.hasFlag(InputFlags.SNEAK) && pairedSneaking && !this.lastPlayerFlags.hasFlag(PlayerFlags.SNEAKING)) {
+			this.entity.keyboardInput.sneaking = true;
+			// patch for shit things
+		}
+
 		this.entity.keyboardInput.jumping = inputData.hasFlag(InputFlags.JUMP);
 		this.entity.keyboardInput.pressingBack = inputData.hasFlag(InputFlags.DOWN);
 		this.entity.keyboardInput.pressingForward = inputData.hasFlag(InputFlags.UP);
@@ -119,9 +140,7 @@ public class MineleftPlayerProfile {
 
 		this.entity.setWorld(world);
 		this.entity.setBaseMovementSpeed(baseMovementSpeed);
-		this.entity.updateMovement();
-
-		Vec3d diff = requestedPosition.subtractVector(this.lastPosition);
+		this.entity.updateMovement(new AdvanceInputType.Vector(inputData.getMoveVecX(), inputData.getMoveVecZ()));
 
 		this.lastPosition = requestedPosition;
 
@@ -129,6 +148,8 @@ public class MineleftPlayerProfile {
 
 		this.logger.debug("paired sprint: " + (this.playerFlags.hasFlag(PlayerFlags.SPRINTING) ? "true" : "false"));
 		this.logger.debug("paired sneak: " + (this.playerFlags.hasFlag(PlayerFlags.SNEAKING) ? "true" : "false"));
+		this.logger.debug("input sprint: " + (inputData.hasFlag(InputFlags.SPRINT) ? "true" : "false"));
+		this.logger.debug("input sneak: " + (inputData.hasFlag(InputFlags.SNEAK) ? "true" : "false"));
 		this.logger.debug("sprint: " + (this.entity.keyboardInput.pressingSprint ? "true" : "false"));
 		this.logger.debug("sneak: " + (this.entity.keyboardInput.sneaking ? "true" : "false"));
 		this.logger.debug("movement speed: " + this.entity.getMovementSpeed());
@@ -142,7 +163,7 @@ public class MineleftPlayerProfile {
 		this.logger.debug("motion delta: " + motionDiff);
 		this.logger.debug("pos delta: " + this.entity.getPosition().subtractVector(requestedPosition).toString());
 
-		if (motionDiff.length() > 0.2d) {
+		if (motionDiff.lengthSquared() > 1e-4) {
 			PacketPlayerViolation pk = new PacketPlayerViolation();
 			pk.message = "Motion";
 			pk.playerUuid = this.info.getUuid();
@@ -150,7 +171,9 @@ public class MineleftPlayerProfile {
 			this.session.sendPacket(pk);
 
 			this.session.getLogger().debug("violation");
-			// ブロックの変化に対応できてないのを検証する
 		}
+
+		this.lastPlayerFlags = this.playerFlags.copy();
+		this.lastInputData = inputData;
 	}
 }

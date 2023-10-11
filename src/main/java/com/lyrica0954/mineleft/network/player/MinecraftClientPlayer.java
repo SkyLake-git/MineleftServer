@@ -48,9 +48,27 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 		return this.touchingWater ? Math.abs(this.keyboardInput.movementForward) > 1.0e-5f : Math.abs(this.keyboardInput.movementForward) >= 0.8f;
 	}
 
+	public void updateMovement(AdvanceInputType.Vector vectorInput) {
+		// todo: normalize and validation
+		Vec3d raw = new Vec3d(vectorInput.getVecX(), 0d, vectorInput.getVecZ());
+
+		Vec3d normalized = (raw.length() > 1d) ? raw.normalize() : raw;
+		this.keyboardInput.tick(false);
+		this.keyboardInput.movementSideways = (float) normalized.x;
+		this.keyboardInput.movementForward = (float) normalized.z;
+		this.updateMovement();
+	}
+
+	public void updateMovement(AdvanceInputType.Key keyInput) {
+		this.keyboardInput.sneaking = keyInput.sneaking;
+		this.keyboardInput.tick(keyInput.sneaking);
+		this.updateMovement();
+	}
+
 	@Override
 	public void updateMovement() {
 		boolean lastSprinting = this.isSprinting();
+		boolean lastSneaking = this.isSneaking();
 		boolean sneakAlternate = this.isSneaking() && !this.keyboardInput.sneaking;
 		boolean sprintAlternate = this.isSprinting() && !this.keyboardInput.pressingSprint;
 		this.sneaking = this.keyboardInput.sneaking;
@@ -61,8 +79,6 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 		} else {
 			this.sneakTicks = 0;
 		}
-
-		this.keyboardInput.tick();
 
 		if (this.isUsingItem()) {
 			this.keyboardInput.movementSideways *= 0.2f;
@@ -88,12 +104,7 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 		}
 
 		if (Math.abs(this.keyboardInput.movementForward) > 1e-4 || Math.abs(this.keyboardInput.movementSideways) > 1e-4) {
-			Vec3d movementInput = new Vec3d(this.keyboardInput.movementSideways, 0d, this.keyboardInput.movementForward).normalize();
-
-			if (this.isSneaking() || sneakAlternate) {
-				movementInput.x *= 0.3f;
-				movementInput.z *= 0.3f;
-			}
+			Vec3d movementInput = new Vec3d(this.keyboardInput.movementSideways, 0d, this.keyboardInput.movementForward);
 
 			this.forwardSpeed = (float) movementInput.z;
 			this.upwardSpeed = (float) movementInput.y;
@@ -103,7 +114,6 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 			this.upwardSpeed = 0f;
 			this.sidewaysSpeed = 0f;
 		}
-
 
 		this.flyingSpeed = 0.02f;
 		if (this.isSprinting() && lastSprinting) {

@@ -110,8 +110,8 @@ public class MineleftPacketHandler implements IPacketHandler {
 
 			temporaryWorld = new TemporaryWorld(builder);
 		}
-
-		player.onAuthInput(packet.inputData, packet.requestedPosition.copy().subtract(0, 1.62, 0).round(4), temporaryWorld);
+		
+		player.onAuthInput(packet.inputData, packet.requestedPosition.copy().subtract(0, 1.62, 0).round(3), temporaryWorld);
 	}
 
 	@Override
