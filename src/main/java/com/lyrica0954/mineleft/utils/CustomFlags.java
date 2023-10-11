@@ -8,6 +8,11 @@ public class CustomFlags implements FlagInterface {
 		this.flags = flags;
 	}
 
+
+	public CustomFlags copy() {
+		return new CustomFlags(this.flags);
+	}
+
 	@Override
 	public long getFlags() {
 		return flags;
