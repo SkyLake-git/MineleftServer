@@ -21,4 +21,6 @@ public interface IPacketHandler {
 	void handleSetPlayerAttribute(PacketSetPlayerAttribute packet) throws PacketHandlingException;
 
 	void handleSetPlayerMotion(PacketSetPlayerMotion packet) throws PacketHandlingException;
+
+	void handlePlayerEffect(PacketPlayerEffect packet) throws PacketHandlingException;
 }

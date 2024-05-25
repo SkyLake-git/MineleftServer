@@ -1,5 +1,8 @@
 package com.lyrica0954.mineleft.utils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class MathHelper {
 
 	public static float sqrtFloat(float v) {
@@ -18,7 +21,11 @@ public class MathHelper {
 		return Math.abs(a - b) < epsilon;
 	}
 
+	public static double round(double a, int n) {
+		return BigDecimal.valueOf(a).setScale(n, RoundingMode.HALF_UP).doubleValue();
+	}
+
 	public static boolean equals(double a, double b) {
-		return equals(a, b, 0.00000001d);
+		return equals(a, b, 0.00001d);
 	}
 }

@@ -6,6 +6,7 @@ import com.lyrica0954.mineleft.mc.level.WorldInterface;
 import com.lyrica0954.mineleft.mc.math.AxisAlignedBB;
 import com.lyrica0954.mineleft.mc.math.EntityRot;
 import com.lyrica0954.mineleft.mc.math.Vec3d;
+import com.lyrica0954.mineleft.network.protocol.types.Effect;
 import com.lyrica0954.mineleft.utils.MathHelper;
 
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class MinecraftEntityLiving {
 
 	protected float movementSpeed;
 
-	protected float jumpVelocity;
+	protected float baseJumpVelocity;
 
 	protected boolean sneaking;
 
@@ -62,6 +63,8 @@ public class MinecraftEntityLiving {
 
 	protected double sizeHeight;
 
+	protected HashMap<Effect, Integer> effectAmplifiers;
+
 	public MinecraftEntityLiving(WorldInterface world, Vec3d position, double sizeWidth, double sizeHeight) {
 		this.position = position;
 		this.motion = new Vec3d();
@@ -74,7 +77,7 @@ public class MinecraftEntityLiving {
 		this.isCollidedVertically = false;
 		this.movementSpeed = 0.1f;
 		this.stepHeight = 0.6f;
-		this.jumpVelocity = 0.42f;
+		this.baseJumpVelocity = 0.42f;
 		this.onGround = false;
 		this.sneaking = false;
 		this.jumping = false;
@@ -87,6 +90,11 @@ public class MinecraftEntityLiving {
 		this.actuallyForwardSpeed = 0.0f;
 		this.touchingWater = false;
 		this.fluidHeights = new HashMap<>();
+		this.effectAmplifiers = new HashMap<>();
+	}
+
+	public HashMap<Effect, Integer> getEffectAmplifiers() {
+		return effectAmplifiers;
 	}
 
 	protected void recalculateBoundingBox() {
@@ -209,15 +217,15 @@ public class MinecraftEntityLiving {
 		double y = this.motion.y;
 		double z = this.motion.z;
 
-		if (Math.abs(x) < 0.00003) {
+		if (Math.abs(x) < 0.0000003) {
 			x = 0.0;
 		}
 
-		if (Math.abs(y) < 0.00003) {
+		if (Math.abs(y) < 0.0000003) {
 			y = 0.0;
 		}
 
-		if (Math.abs(z) < 0.00003) {
+		if (Math.abs(z) < 0.0000003) {
 			z = 0.0;
 		}
 
@@ -246,10 +254,13 @@ public class MinecraftEntityLiving {
 		this.travel(new Vec3d(this.sidewaysSpeed * 0.98f, this.upwardSpeed, this.forwardSpeed * 0.98f));
 	}
 
-	protected void jump() {
-		float f = this.jumpVelocity;
+	protected float getJumpVelocity() {
+		int amplifier = this.effectAmplifiers.getOrDefault(Effect.JUMP_BOOST, -1);
+		return this.baseJumpVelocity + (amplifier >= 0 ? 0.1f * (amplifier + 1) : 0f);
+	}
 
-		// todo: jump boost
+	protected void jump() {
+		float f = this.getJumpVelocity();
 
 		Vec3d motion = this.getMotion();
 		this.setMotion(motion.x, f, motion.z);
@@ -342,9 +353,9 @@ public class MinecraftEntityLiving {
 		double by = y;
 		double bz = z;
 
-		AxisAlignedBB bb = this.boundingBox.copy();
+		AxisAlignedBB bb = this.boundingBox.copy().round(4);
 
-		System.out.println(bb.toString());
+		System.out.println("player bb: " + bb.toString());
 		System.out.println("collides:");
 
 		for (AxisAlignedBB bbY : boxes) {
@@ -352,47 +363,52 @@ public class MinecraftEntityLiving {
 			y = bbY.calculateYOffset(bb, y);
 		}
 
+		System.out.println("offset y : " + y);
 		bb.offset(0d, y, 0d);
 		boolean wantedVertically = this.onGround || (by != y && by < 0.0d);
+
+		// jump 中に by が0以上なのにStepしてしまう
+		// 2024/05/24 やれ
 
 		for (AxisAlignedBB bbX : boxes) {
 			x = bbX.calculateXOffset(bb, x);
 		}
 
+		System.out.println("offset x : " + x);
 		bb.offset(x, 0d, 0d);
 
 		for (AxisAlignedBB bbZ : boxes) {
 			z = bbZ.calculateZOffset(bb, z);
 		}
 
+		System.out.println("offset z : " + z);
 		bb.offset(0d, 0d, z);
 
 		if (this.stepHeight > 0.0f && wantedVertically && (bx != x || bz != z)) {
 			double cx = x;
 			double cy = y;
+			double cdy = y;
 			double cz = z;
-			x = bx;
 			y = this.stepHeight;
-			z = bz;
 
-			AxisAlignedBB stepBB = this.boundingBox.copy();
+			AxisAlignedBB stepBB = bb.copy();
 
 			List<AxisAlignedBB> stepList = this.getWorld().getCollisionBoxes(stepBB.copy().addCoord(x, y, z));
 
 			for (AxisAlignedBB bbY : stepList) {
-				y = bbY.calculateYOffset(stepBB, y);
+				cy = bbY.calculateYOffset(stepBB, cy);
 			}
 
 			stepBB.offset(0d, y, 0d);
 
 			for (AxisAlignedBB bbX : stepList) {
-				x = bbX.calculateXOffset(stepBB, x);
+				cx = bbX.calculateXOffset(stepBB, cx);
 			}
 
 			stepBB.offset(x, 0d, 0d);
 
 			for (AxisAlignedBB bbZ : stepList) {
-				z = bbZ.calculateZOffset(stepBB, z);
+				cz = bbZ.calculateZOffset(stepBB, cz);
 			}
 
 			stepBB.offset(0d, 0d, z);
@@ -405,6 +421,8 @@ public class MinecraftEntityLiving {
 			y += reverseY;
 
 			stepBB.offset(0d, reverseY, 0d);
+
+			System.out.println("Step");
 
 			if ((cx * cx + cz * cz) >= (x * x + z * z)) {
 				x = cx;
@@ -419,15 +437,17 @@ public class MinecraftEntityLiving {
 
 		this.resetPositionToBoundingBox();
 
-		this.isCollidedHorizontally = bx != x || bz != z;
-		this.isCollidedVertically = by != y;
+		this.isCollidedHorizontally = !MathHelper.equals(bx, x) || !MathHelper.equals(bz, z);
+		this.isCollidedVertically = !MathHelper.equals(by, y);
 		this.onGround = this.isCollidedVertically && by < 0d;
 
-		if (bx != x) {
+		System.out.println("before x: " + bx + " x: " + x);
+		if (!MathHelper.equals(bx, x)) {
 			this.motion.x = 0d;
 		}
 
-		if (bz != z) {
+		if (!MathHelper.equals(bz, z)) {
+			System.out.println("collide z");
 			this.motion.z = 0d;
 		}
 

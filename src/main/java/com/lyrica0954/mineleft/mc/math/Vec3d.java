@@ -32,7 +32,7 @@ public class Vec3d {
 
 	@Override
 	public String toString() {
-		return String.format("Vec3d(x=%f,y=%f,z=%f)", this.x, this.y, this.z);
+		return String.format("Vec3d(x=%.10f,y=%.10f,z=%.10f)", this.x, this.y, this.z);
 	}
 
 	public Vec3d add(double x, double y, double z) {
@@ -81,5 +81,13 @@ public class Vec3d {
 
 	public Vec3d multiply(double v) {
 		return new Vec3d(this.x * v, this.y * v, this.z * v);
+	}
+
+	public Vec3d divide(double v) {
+		return new Vec3d(this.x / v, this.y / v, this.z / v);
+	}
+
+	public Vec3d floor() {
+		return new Vec3d(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
 	}
 }

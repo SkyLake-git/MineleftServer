@@ -76,7 +76,7 @@ public class MineleftPacketHandler implements IPacketHandler {
 			throw PacketHandlingException.wrap(e);
 		}
 
-		//this.session.getLogger().info(String.format("Deserialized chunk! x: %d, z: %d", packet.x, packet.z));
+		this.session.getLogger().info(String.format("Deserialized chunk! x: %d, z: %d", packet.x, packet.z));
 
 
 		World world;
@@ -110,8 +110,8 @@ public class MineleftPacketHandler implements IPacketHandler {
 
 			temporaryWorld = new TemporaryWorld(builder);
 		}
-		
-		player.onAuthInput(packet.inputData, packet.requestedPosition.copy().subtract(0, 1.62, 0).round(3), temporaryWorld);
+
+		player.onAuthInput(packet.inputData, packet.requestedPosition.copy().subtract(0, 1.62, 0), temporaryWorld);
 	}
 
 	@Override
@@ -146,6 +146,25 @@ public class MineleftPacketHandler implements IPacketHandler {
 		player.getPlayerFlags().setFlags(packet.flags);
 
 		player.getLogger().info("Updated player flags: " + packet.flags);
+	}
+
+	@Override
+	public void handlePlayerEffect(PacketPlayerEffect packet) throws PacketHandlingException {
+		MineleftPlayerProfile player = this.session.getPlayers().get(packet.playerUuid);
+
+		if (player == null) {
+			return;
+		}
+
+		if (packet.mode == PacketPlayerEffect.MODE_ADD) {
+			player.getEntity().getEffectAmplifiers().putIfAbsent(packet.effect, packet.amplifier);
+		} else if (packet.mode == PacketPlayerEffect.MODE_REMOVE) {
+			player.getEntity().getEffectAmplifiers().remove(packet.effect);
+		} else if (packet.mode == PacketPlayerEffect.MODE_MODIFY) {
+			if (player.getEntity().getEffectAmplifiers().containsKey(packet.effect)) {
+				player.getEntity().getEffectAmplifiers().put(packet.effect, packet.amplifier);
+			}
+		}
 	}
 
 	@Override

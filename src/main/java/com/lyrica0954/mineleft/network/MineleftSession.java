@@ -46,7 +46,7 @@ public class MineleftSession implements ISession {
 		this.worldManager = new WorldManager();
 		this.players = new Hashtable<>();
 		this.sendQueue = new ArrayDeque<>();
-		this.chunkSendingMethod = ChunkSendingMethod.REALTIME;
+		this.chunkSendingMethod = ChunkSendingMethod.ALTERNATE;
 
 		this.logger.info("New session created");
 	}

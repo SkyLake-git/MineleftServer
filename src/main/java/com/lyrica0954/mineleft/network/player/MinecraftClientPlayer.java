@@ -68,9 +68,6 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 	@Override
 	public void updateMovement() {
 		boolean lastSprinting = this.isSprinting();
-		boolean lastSneaking = this.isSneaking();
-		boolean sneakAlternate = this.isSneaking() && !this.keyboardInput.sneaking;
-		boolean sprintAlternate = this.isSprinting() && !this.keyboardInput.pressingSprint;
 		this.sneaking = this.keyboardInput.sneaking;
 		this.jumping = this.keyboardInput.jumping;
 
@@ -98,10 +95,10 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 			this.setMotion(this.getMotion().subtract(0, 0.04d, 0));
 		}
 
-		this.movementSpeed = this.baseMovementSpeed;
-		if (this.isSprinting()) {
-			this.movementSpeed *= 1.3f;
+		if (this.isSprinting() && (!this.keyboardInput.pressingForward)) {
+			this.setSprinting(false);
 		}
+
 
 		if (Math.abs(this.keyboardInput.movementForward) > 1e-4 || Math.abs(this.keyboardInput.movementSideways) > 1e-4) {
 			Vec3d movementInput = new Vec3d(this.keyboardInput.movementSideways, 0d, this.keyboardInput.movementForward);
@@ -120,11 +117,12 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 			this.flyingSpeed += 0.005999999865889549f;
 		}
 
-		if (this.isSprinting() && (!this.keyboardInput.pressingForward)) {
-			this.setSprinting(false);
-		}
-
 		super.updateMovement();
+
+		this.movementSpeed = this.baseMovementSpeed;
+		if (this.isSprinting()) {
+			this.movementSpeed *= 1.3f;
+		}
 
 		this.lastMovementForward = this.keyboardInput.movementForward;
 	}

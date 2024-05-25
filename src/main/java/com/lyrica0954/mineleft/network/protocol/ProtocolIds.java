@@ -10,7 +10,8 @@ public enum ProtocolIds {
 	SET_PLAYER_FLAGS(6),
 	SET_PLAYER_ATTRIBUTE(7),
 	PLAYER_VIOLATION(8),
-	SET_PLAYER_MOTION(9);
+	SET_PLAYER_MOTION(9),
+	PLAYER_EFFECT(10);
 
 
 	public final short id;

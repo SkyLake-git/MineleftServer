@@ -12,6 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+
 public class MineleftPlayerProfile {
 
 	protected MineleftSession session;
@@ -35,6 +37,8 @@ public class MineleftPlayerProfile {
 	protected InputData lastInputData;
 
 	protected float baseMovementSpeed;
+
+	protected HashMap<Effect, Integer> effectAmplifiers;
 
 	public MineleftPlayerProfile(MineleftSession session, PlayerInfo info, Vec3d position, World currentWorld) {
 		this.session = session;
@@ -98,12 +102,17 @@ public class MineleftPlayerProfile {
 			this.logger.debug("World blocks: " + temporaryWorld.getPalette().size());
 		} else {
 			world = this.world;
+
+			if (this.world.isChunkLoaded((int) this.position.floor().x, (int) this.position.floor().z)) {
+				this.logger.debug("Chunk Loaded");
+			}
 		}
 
 		if (world == null) {
 			this.logger.debug("World not ready, ignoring auth input");
 			return;
 		}
+
 
 		this.entity.setPosition(this.lastPosition);
 
@@ -126,12 +135,18 @@ public class MineleftPlayerProfile {
 			// patch for shit things
 		}
 
+		boolean sprinting = inputData.hasFlag(InputFlags.SPRINT);
+
+		if (this.playerFlags.hasFlag(PlayerFlags.SPRINTING)) {
+			sprinting = true;
+		}
+
 		this.entity.keyboardInput.jumping = inputData.hasFlag(InputFlags.JUMP);
 		this.entity.keyboardInput.pressingBack = inputData.hasFlag(InputFlags.DOWN);
 		this.entity.keyboardInput.pressingForward = inputData.hasFlag(InputFlags.UP);
 		this.entity.keyboardInput.pressingLeft = inputData.hasFlag(InputFlags.LEFT);
 		this.entity.keyboardInput.pressingRight = inputData.hasFlag(InputFlags.RIGHT);
-		this.entity.keyboardInput.pressingSprint = this.playerFlags.hasFlag(PlayerFlags.SPRINTING) || inputData.hasFlag(InputFlags.SPRINT);
+		this.entity.keyboardInput.pressingSprint = sprinting;
 
 		float baseMovementSpeed = this.getBaseMovementSpeed();
 
@@ -146,22 +161,23 @@ public class MineleftPlayerProfile {
 
 		Vec3d motionDiff = this.entity.getMotion().subtractVector(inputData.getDelta());
 
-		this.logger.debug("paired sprint: " + (this.playerFlags.hasFlag(PlayerFlags.SPRINTING) ? "true" : "false"));
-		this.logger.debug("paired sneak: " + (this.playerFlags.hasFlag(PlayerFlags.SNEAKING) ? "true" : "false"));
-		this.logger.debug("input sprint: " + (inputData.hasFlag(InputFlags.SPRINT) ? "true" : "false"));
-		this.logger.debug("input sneak: " + (inputData.hasFlag(InputFlags.SNEAK) ? "true" : "false"));
-		this.logger.debug("sprint: " + (this.entity.keyboardInput.pressingSprint ? "true" : "false"));
-		this.logger.debug("sneak: " + (this.entity.keyboardInput.sneaking ? "true" : "false"));
-		this.logger.debug("movement speed: " + this.entity.getMovementSpeed());
-		this.logger.debug("base movement speed: " + baseMovementSpeed);
-		this.logger.debug("motion: " + this.entity.getMotion().toString());
-		this.logger.debug("delta: " + inputData.getDelta().toString());
-		this.logger.debug("w: " + (this.entity.keyboardInput.pressingForward ? "true" : "false"));
-		this.logger.debug("sideways: " + inputData.getMoveVecX() + " forward: " + inputData.getMoveVecZ());
-		this.logger.debug("e: " + this.entity.getPosition().toString() + " p: " + requestedPosition);
-		this.logger.debug("y delta: " + (this.entity.getMotion().y - inputData.getDelta().y));
-		this.logger.debug("motion delta: " + motionDiff);
-		this.logger.debug("pos delta: " + this.entity.getPosition().subtractVector(requestedPosition).toString());
+		this.logger.debug("paired sprint: {}", this.playerFlags.hasFlag(PlayerFlags.SPRINTING) ? "true" : "false");
+		this.logger.debug("paired sneak: {}", this.playerFlags.hasFlag(PlayerFlags.SNEAKING) ? "true" : "false");
+		this.logger.debug("input sprint: {}", inputData.hasFlag(InputFlags.SPRINT) ? "true" : "false");
+		this.logger.debug("input sneak: {}", inputData.hasFlag(InputFlags.SNEAK) ? "true" : "false");
+		this.logger.debug("keyboard sprint: {}", this.entity.keyboardInput.pressingSprint ? "true" : "false");
+		this.logger.debug("sprint: {}", this.entity.isSprinting() ? "true" : "false");
+		this.logger.debug("sneak: {}", this.entity.keyboardInput.sneaking ? "true" : "false");
+		this.logger.debug("movement speed: {}", this.entity.getMovementSpeed());
+		this.logger.debug("base movement speed: {}", baseMovementSpeed);
+		this.logger.debug("motion: {}", this.entity.getMotion().toString());
+		this.logger.debug("delta: {}", inputData.getDelta().toString());
+		this.logger.debug("w: {}", this.entity.keyboardInput.pressingForward ? "true" : "false");
+		this.logger.debug("sideways: {} forward: {}", inputData.getMoveVecX(), inputData.getMoveVecZ());
+		this.logger.debug("e: {} p: {}", this.entity.getPosition().toString(), requestedPosition.round(4));
+		this.logger.debug("y delta: {}", this.entity.getMotion().y - inputData.getDelta().y);
+		this.logger.debug("motion delta: {}", motionDiff);
+		this.logger.debug("pos delta: {}", this.entity.getPosition().subtractVector(requestedPosition.round(4)).toString());
 
 		if (motionDiff.lengthSquared() > 1e-4) {
 			PacketPlayerViolation pk = new PacketPlayerViolation();

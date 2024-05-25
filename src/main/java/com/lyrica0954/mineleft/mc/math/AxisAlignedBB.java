@@ -1,5 +1,6 @@
 package com.lyrica0954.mineleft.mc.math;
 
+import com.lyrica0954.mineleft.utils.MathHelper;
 import io.netty.buffer.ByteBuf;
 
 public class AxisAlignedBB {
@@ -36,6 +37,17 @@ public class AxisAlignedBB {
 
 	public AxisAlignedBB copy() {
 		return new AxisAlignedBB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
+	}
+
+	public AxisAlignedBB round(int n) {
+		return new AxisAlignedBB(
+				MathHelper.round(this.minX, n),
+				MathHelper.round(this.minY, n),
+				MathHelper.round(this.minZ, n),
+				MathHelper.round(this.maxX, n),
+				MathHelper.round(this.maxY, n),
+				MathHelper.round(this.maxZ, n)
+		);
 	}
 
 	public AxisAlignedBB expand(double x, double y, double z) {
@@ -122,6 +134,8 @@ public class AxisAlignedBB {
 			}
 		}
 
+		// OK
+
 		return x;
 	}
 
@@ -145,6 +159,8 @@ public class AxisAlignedBB {
 			}
 		}
 
+
+		// OK
 		return y;
 	}
 
@@ -172,7 +188,7 @@ public class AxisAlignedBB {
 	}
 
 	public boolean intersectsWith(AxisAlignedBB bb) {
-		double epsilon = 0.00001d;
+		double epsilon = 0.0001d;
 		if (bb.maxX - this.minX > epsilon && this.maxX - bb.minX > epsilon) {
 			if (bb.maxY - this.minY > epsilon && this.maxY - bb.minY > epsilon) {
 				return bb.maxZ - this.minZ > epsilon && this.maxZ - bb.minZ > epsilon;

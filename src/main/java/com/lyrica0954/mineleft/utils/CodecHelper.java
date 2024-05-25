@@ -3,6 +3,7 @@ package com.lyrica0954.mineleft.utils;
 import com.lyrica0954.mineleft.mc.math.Vec3d;
 import com.lyrica0954.mineleft.mc.math.Vec3i;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
@@ -20,6 +21,14 @@ public class CodecHelper {
 		}
 
 		return list;
+	}
+
+	public static float simulateFloatError(float base) {
+		ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
+		buf.writeFloatLE(base);
+
+		// release buffer?
+		return buf.readFloatLE();
 	}
 
 	public static <T> void writeOptional(ByteBuf buf, @Nullable T obj, ThrowingConsumer<T> consumer) throws Exception {
