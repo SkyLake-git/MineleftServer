@@ -4,6 +4,7 @@ import com.lyrica0954.mineleft.MortonCode;
 import com.lyrica0954.mineleft.mc.Block;
 import com.lyrica0954.mineleft.mc.BlockMappings;
 import com.lyrica0954.mineleft.mc.level.*;
+import com.lyrica0954.mineleft.mc.math.Vec3f;
 import com.lyrica0954.mineleft.network.MineleftSession;
 import com.lyrica0954.mineleft.network.NetworkConverters;
 import com.lyrica0954.mineleft.network.chunk.ChunkDeserializer;
@@ -53,7 +54,8 @@ public class MineleftPacketHandler implements IPacketHandler {
 			player.setWorld(world);
 		}
 
-		player.setPosition(packet.position.copy());
+		player.getEntity().setPosition(packet.position.copy());
+		player.getEntity().setMotion(new Vec3f());
 	}
 
 	@Override
@@ -61,8 +63,8 @@ public class MineleftPacketHandler implements IPacketHandler {
 		this.session.getWorldManager().setDefaultWorldName(packet.defaultWorldName);
 
 		this.session.getLogger().info("Configured.");
-		this.session.getLogger().info("Default world name: " + packet.defaultWorldName);
-		this.session.getLogger().info("Chunk sending method: " + packet.chunkSendingMethod);
+		this.session.getLogger().info("Default world name: {}", packet.defaultWorldName);
+		this.session.getLogger().info("Chunk sending method: {}", packet.chunkSendingMethod);
 
 		this.session.setChunkSendingMethod(packet.chunkSendingMethod);
 	}
@@ -111,7 +113,8 @@ public class MineleftPacketHandler implements IPacketHandler {
 			temporaryWorld = new TemporaryWorld(builder);
 		}
 
-		player.onAuthInput(packet.inputData, packet.requestedPosition.copy().subtract(0, 1.62, 0), temporaryWorld);
+		player.setCurrentFrame(packet.frame);
+		player.onAuthInput(packet.inputData, packet.requestedPosition.copy().subtract(0, 1.62f, 0), temporaryWorld);
 	}
 
 	@Override
@@ -125,7 +128,7 @@ public class MineleftPacketHandler implements IPacketHandler {
 		for (Map.Entry<Integer, Block> entry : packet.mapping.entrySet()) {
 			builder.register(entry.getValue());
 
-			this.session.getLogger().info("Registered block mapping " + entry.getKey() + " -> " + entry.getValue().toString());
+			this.session.getLogger().info("Registered block mapping {} -> {}", entry.getKey(), entry.getValue().toString());
 		}
 
 		builder.setNullBlock(packet.nullBlockNetworkId);

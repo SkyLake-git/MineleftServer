@@ -1,6 +1,6 @@
 package com.lyrica0954.mineleft.network.protocol;
 
-import com.lyrica0954.mineleft.mc.math.Vec3d;
+import com.lyrica0954.mineleft.mc.math.Vec3f;
 import com.lyrica0954.mineleft.network.protocol.types.PlayerInfo;
 import com.lyrica0954.mineleft.utils.CodecHelper;
 import com.lyrica0954.protocol.PacketBounds;
@@ -15,14 +15,14 @@ public class PacketPlayerLogin extends MineleftPacket {
 
 	public String worldName;
 
-	public Vec3d position;
+	public Vec3f position;
 
 	@Override
 	public void encode(ByteBuf out) throws Exception {
 		CodecHelper.writeUTFSequence(out, this.playerInfo.getName());
 		CodecHelper.writeUUID(out, this.playerInfo.getUuid());
 		CodecHelper.writeUTFSequence(out, this.worldName);
-		CodecHelper.writeVec3d(out, this.position);
+		CodecHelper.writeVec3f(out, this.position);
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class PacketPlayerLogin extends MineleftPacket {
 		UUID uuid = CodecHelper.readUUID(in);
 		this.playerInfo = new PlayerInfo(name, uuid);
 		this.worldName = CodecHelper.readUTFSequence(in);
-		this.position = CodecHelper.readVec3d(in);
+		this.position = CodecHelper.readVec3f(in);
 	}
 
 	@Override

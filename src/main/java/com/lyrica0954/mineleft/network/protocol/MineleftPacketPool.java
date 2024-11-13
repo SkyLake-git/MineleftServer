@@ -25,6 +25,8 @@ public class MineleftPacketPool implements IPacketPool {
 		this.register(ProtocolIds.SET_PLAYER_ATTRIBUTE.id, new PacketSetPlayerAttribute());
 		this.register(ProtocolIds.SET_PLAYER_MOTION.id, new PacketSetPlayerMotion());
 		this.register(ProtocolIds.PLAYER_EFFECT.id, new PacketPlayerEffect());
+		this.register(ProtocolIds.CORRECT_MOVEMENT.id, new PacketCorrectMovement());
+		this.register(ProtocolIds.SIMULATION_FRAME_DEBUG.id, new PacketSimulationFrameDebug());
 	}
 
 	public void register(short protocolId, Packet packet) {

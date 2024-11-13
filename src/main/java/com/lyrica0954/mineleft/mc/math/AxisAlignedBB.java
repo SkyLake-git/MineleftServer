@@ -5,19 +5,19 @@ import io.netty.buffer.ByteBuf;
 
 public class AxisAlignedBB {
 
-	public double minX;
+	public float minX;
 
-	public double minY;
+	public float minY;
 
-	public double minZ;
+	public float minZ;
 
-	public double maxX;
+	public float maxX;
 
-	public double maxY;
+	public float maxY;
 
-	public double maxZ;
+	public float maxZ;
 
-	public AxisAlignedBB(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+	public AxisAlignedBB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
 		this.minX = minX;
 		this.minY = minY;
 		this.minZ = minZ;
@@ -50,7 +50,7 @@ public class AxisAlignedBB {
 		);
 	}
 
-	public AxisAlignedBB expand(double x, double y, double z) {
+	public AxisAlignedBB expand(float x, float y, float z) {
 		this.minX -= x;
 		this.minY -= y;
 		this.minZ -= z;
@@ -61,7 +61,7 @@ public class AxisAlignedBB {
 		return this;
 	}
 
-	public AxisAlignedBB offset(double x, double y, double z) {
+	public AxisAlignedBB offset(float x, float y, float z) {
 		this.minX += x;
 		this.minY += y;
 		this.minZ += z;
@@ -77,7 +77,7 @@ public class AxisAlignedBB {
 		return String.format("AxisAlignedBB(minX=%f,minY=%f,minZ=%f,maxX=%f,maxY=%f,maxZ=%f)", this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
 	}
 
-	public AxisAlignedBB addCoord(double x, double y, double z) {
+	public AxisAlignedBB addCoord(float x, float y, float z) {
 		if (x < 0) {
 			this.minX += x;
 		} else if (x > 0) {
@@ -99,11 +99,11 @@ public class AxisAlignedBB {
 		return this;
 	}
 
-	public AxisAlignedBB offsetCopy(double x, double y, double z) {
+	public AxisAlignedBB offsetCopy(float x, float y, float z) {
 		return this.copy().offset(x, y, z);
 	}
 
-	public AxisAlignedBB contract(double x, double y, double z) {
+	public AxisAlignedBB contract(float x, float y, float z) {
 		this.minX += x;
 		this.minY += y;
 		this.minZ += z;
@@ -114,7 +114,7 @@ public class AxisAlignedBB {
 		return this;
 	}
 
-	public double calculateXOffset(AxisAlignedBB bb, double x) {
+	public float calculateXOffset(AxisAlignedBB bb, float x) {
 		if (bb.maxY <= this.minY || bb.minY >= this.maxY) {
 			return x;
 		}
@@ -123,12 +123,12 @@ public class AxisAlignedBB {
 		}
 
 		if (x > 0 && bb.maxX <= this.minX) {
-			double x1 = this.minX - bb.maxX;
+			float x1 = this.minX - bb.maxX;
 			if (x1 < x) {
 				x = x1;
 			}
 		} else if (x < 0 && bb.minX >= this.maxX) {
-			double x2 = this.maxX - bb.minX;
+			float x2 = this.maxX - bb.minX;
 			if (x2 > x) {
 				x = x2;
 			}
@@ -139,7 +139,7 @@ public class AxisAlignedBB {
 		return x;
 	}
 
-	public double calculateYOffset(AxisAlignedBB bb, double y) {
+	public float calculateYOffset(AxisAlignedBB bb, float y) {
 		if (bb.maxX <= this.minX || bb.minX >= this.maxX) {
 			return y;
 		}
@@ -148,12 +148,12 @@ public class AxisAlignedBB {
 		}
 
 		if (y > 0 && bb.maxY <= this.minY) {
-			double y1 = this.minY - bb.maxY;
+			float y1 = this.minY - bb.maxY;
 			if (y1 < y) {
 				y = y1;
 			}
 		} else if (y < 0 && bb.minY >= this.maxY) {
-			double y2 = this.maxY - bb.minY;
+			float y2 = this.maxY - bb.minY;
 			if (y2 > y) {
 				y = y2;
 			}
@@ -164,7 +164,7 @@ public class AxisAlignedBB {
 		return y;
 	}
 
-	public double calculateZOffset(AxisAlignedBB bb, double z) {
+	public float calculateZOffset(AxisAlignedBB bb, float z) {
 		if (bb.maxX <= this.minX || bb.minX >= this.maxX) {
 			return z;
 		}
@@ -173,12 +173,12 @@ public class AxisAlignedBB {
 		}
 
 		if (z > 0 && bb.maxZ <= this.minZ) {
-			double z1 = this.minZ - bb.maxZ;
+			float z1 = this.minZ - bb.maxZ;
 			if (z1 < z) {
 				z = z1;
 			}
 		} else if (z < 0 && bb.minZ >= this.maxZ) {
-			double z2 = this.maxZ - bb.minZ;
+			float z2 = this.maxZ - bb.minZ;
 			if (z2 > z) {
 				z = z2;
 			}
@@ -188,7 +188,7 @@ public class AxisAlignedBB {
 	}
 
 	public boolean intersectsWith(AxisAlignedBB bb) {
-		double epsilon = 0.0001d;
+		float epsilon = 1e-7f;
 		if (bb.maxX - this.minX > epsilon && this.maxX - bb.minX > epsilon) {
 			if (bb.maxY - this.minY > epsilon && this.maxY - bb.minY > epsilon) {
 				return bb.maxZ - this.minZ > epsilon && this.maxZ - bb.minZ > epsilon;
@@ -199,23 +199,23 @@ public class AxisAlignedBB {
 	}
 
 	public AxisAlignedBB read(ByteBuf buf) throws Exception {
-		this.minX = buf.readDouble();
-		this.minY = buf.readDouble();
-		this.minZ = buf.readDouble();
-		this.maxX = buf.readDouble();
-		this.maxY = buf.readDouble();
-		this.maxZ = buf.readDouble();
+		this.minX = buf.readFloat();
+		this.minY = buf.readFloat();
+		this.minZ = buf.readFloat();
+		this.maxX = buf.readFloat();
+		this.maxY = buf.readFloat();
+		this.maxZ = buf.readFloat();
 
 		return this;
 	}
 
 	public void write(ByteBuf buf) throws Exception {
-		buf.writeDouble(this.minX);
-		buf.writeDouble(this.minY);
-		buf.writeDouble(this.minZ);
-		buf.writeDouble(this.maxX);
-		buf.writeDouble(this.maxY);
-		buf.writeDouble(this.maxZ);
+		buf.writeFloat(this.minX);
+		buf.writeFloat(this.minY);
+		buf.writeFloat(this.minZ);
+		buf.writeFloat(this.maxX);
+		buf.writeFloat(this.maxY);
+		buf.writeFloat(this.maxZ);
 	}
 
 }

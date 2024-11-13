@@ -1,6 +1,6 @@
 package com.lyrica0954.mineleft.network.protocol;
 
-import com.lyrica0954.mineleft.mc.math.Vec3d;
+import com.lyrica0954.mineleft.mc.math.Vec3f;
 import com.lyrica0954.mineleft.utils.CodecHelper;
 import com.lyrica0954.protocol.PacketBounds;
 import io.netty.buffer.ByteBuf;
@@ -12,7 +12,7 @@ public class PacketSetPlayerMotion extends MineleftPacket {
 
 	public UUID playerUuid;
 
-	public Vec3d motion;
+	public Vec3f motion;
 
 	@Override
 	public @NotNull ProtocolIds getProtocolId() {
@@ -22,13 +22,13 @@ public class PacketSetPlayerMotion extends MineleftPacket {
 	@Override
 	public void encode(ByteBuf out) throws Exception {
 		CodecHelper.writeUUID(out, this.playerUuid);
-		CodecHelper.writeVec3d(out, this.motion);
+		CodecHelper.writeVec3f(out, this.motion);
 	}
 
 	@Override
 	public void decode(ByteBuf in) throws Exception {
 		this.playerUuid = CodecHelper.readUUID(in);
-		this.motion = CodecHelper.readVec3d(in);
+		this.motion = CodecHelper.readVec3f(in);
 	}
 
 	@Override

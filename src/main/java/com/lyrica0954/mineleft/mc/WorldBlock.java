@@ -28,6 +28,6 @@ public class WorldBlock implements BlockInfoDelegate {
 	}
 
 	public Vec3i getPosition() {
-		return position;
+		return position.copy();
 	}
 }

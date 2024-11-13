@@ -9,23 +9,28 @@ public class MathHelper {
 		return (float) Math.sqrt(v);
 	}
 
-	public static int floor(double v) {
+	public static int floor(float v) {
 		return (int) Math.floor(v);
 	}
 
-	public static double clamp(double num, double min, double max) {
+	public static int ceil(float v) {
+		return (int) Math.ceil(v);
+	}
+
+
+	public static float clamp(float num, float min, float max) {
 		return num < min ? min : (Math.min(num, max));
 	}
 
-	public static boolean equals(double a, double b, double epsilon) {
+	public static boolean equals(float a, float b, float epsilon) {
 		return Math.abs(a - b) < epsilon;
 	}
 
-	public static double round(double a, int n) {
-		return BigDecimal.valueOf(a).setScale(n, RoundingMode.HALF_UP).doubleValue();
+	public static float round(float a, int n) {
+		return BigDecimal.valueOf(a).setScale(n, RoundingMode.HALF_UP).floatValue();
 	}
 
-	public static boolean equals(double a, double b) {
-		return equals(a, b, 0.00001d);
+	public static boolean equals(float a, float b) {
+		return equals(a, b, 1e-7f);
 	}
 }

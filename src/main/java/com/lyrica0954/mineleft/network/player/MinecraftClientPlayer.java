@@ -1,7 +1,8 @@
 package com.lyrica0954.mineleft.network.player;
 
 import com.lyrica0954.mineleft.mc.level.WorldInterface;
-import com.lyrica0954.mineleft.mc.math.Vec3d;
+import com.lyrica0954.mineleft.mc.math.AxisAlignedBB;
+import com.lyrica0954.mineleft.mc.math.Vec3f;
 
 public class MinecraftClientPlayer extends MinecraftEntityLiving {
 
@@ -17,7 +18,7 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 
 	protected float lastMovementForward;
 
-	public MinecraftClientPlayer(WorldInterface world, Vec3d position, double sizeWidth, double sizeHeight) {
+	public MinecraftClientPlayer(WorldInterface world, Vec3f position, float sizeWidth, float sizeHeight) {
 		super(world, position, sizeWidth, sizeHeight);
 		this.keyboardInput = new EntityMovementInput();
 		this.usingItem = false;
@@ -50,12 +51,11 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 
 	public void updateMovement(AdvanceInputType.Vector vectorInput) {
 		// todo: normalize and validation
-		Vec3d raw = new Vec3d(vectorInput.getVecX(), 0d, vectorInput.getVecZ());
+		Vec3f raw = new Vec3f(vectorInput.getVecX(), 0, vectorInput.getVecZ());
 
-		Vec3d normalized = (raw.length() > 1d) ? raw.normalize() : raw;
 		this.keyboardInput.tick(false);
-		this.keyboardInput.movementSideways = (float) normalized.x;
-		this.keyboardInput.movementForward = (float) normalized.z;
+		this.keyboardInput.movementSideways = raw.x;
+		this.keyboardInput.movementForward = raw.z;
 		this.updateMovement();
 	}
 
@@ -92,7 +92,7 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 		}
 
 		if (this.touchingWater && this.keyboardInput.sneaking) {
-			this.setMotion(this.getMotion().subtract(0, 0.04d, 0));
+			this.setMotion(this.getMotion().subtract(0, 0.04f, 0));
 		}
 
 		if (this.isSprinting() && (!this.keyboardInput.pressingForward)) {
@@ -101,15 +101,21 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 
 
 		if (Math.abs(this.keyboardInput.movementForward) > 1e-4 || Math.abs(this.keyboardInput.movementSideways) > 1e-4) {
-			Vec3d movementInput = new Vec3d(this.keyboardInput.movementSideways, 0d, this.keyboardInput.movementForward);
+			Vec3f movementInput = new Vec3f(this.keyboardInput.movementSideways, 0, this.keyboardInput.movementForward);
 
-			this.forwardSpeed = (float) movementInput.z;
-			this.upwardSpeed = (float) movementInput.y;
-			this.sidewaysSpeed = (float) movementInput.x;
+			movementInput = (movementInput.length() > 1f) ? movementInput.normalize() : movementInput;
+
+			this.forwardSpeed = movementInput.z;
+			this.upwardSpeed = movementInput.y;
+			this.sidewaysSpeed = movementInput.x;
+			this.actuallyForwardSpeed = this.keyboardInput.movementForward;
+			this.actuallySidewaysSpeed = this.keyboardInput.movementSideways;
 		} else {
 			this.forwardSpeed = 0f;
 			this.upwardSpeed = 0f;
 			this.sidewaysSpeed = 0f;
+			this.actuallySidewaysSpeed = 0f;
+			this.actuallyForwardSpeed = 0f;
 		}
 
 		this.flyingSpeed = 0.02f;
@@ -117,13 +123,60 @@ public class MinecraftClientPlayer extends MinecraftEntityLiving {
 			this.flyingSpeed += 0.005999999865889549f;
 		}
 
-		super.updateMovement();
-
 		this.movementSpeed = this.baseMovementSpeed;
 		if (this.isSprinting()) {
 			this.movementSpeed *= 1.3f;
 		}
 
+		super.updateMovement();
+
 		this.lastMovementForward = this.keyboardInput.movementForward;
+	}
+
+	@Override
+	public Vec3f adjustMovementForSneaking(Vec3f movement, Vec3f movementInput) {
+		movement = super.adjustMovementForSneaking(movement, movementInput);
+		movementInput.y = 0f;
+		Vec3f normalized = movementInput.normalize();
+		System.out.println("bef: " + normalized);
+		if (normalized.x > 0.01f) {
+			normalized.x = 1.0f;
+		}
+		if (normalized.x < -0.01f) {
+			normalized.x = -1.0f;
+		}
+		if (normalized.z > 0.01f) {
+			normalized.z = 1.0f;
+		}
+		if (normalized.z < -0.01f) {
+			normalized.z = -1.0f;
+		}
+		normalized = normalized.multiply(0.04f); // todo:
+		System.out.println(normalized);
+		float nx = normalized.x;
+		float nz = normalized.z;
+		float x = movement.x;
+		float z = movement.z;
+
+		AxisAlignedBB bb = this.getBoundingBox().copy();
+
+		if (this.getWorld().getCollisionBoxes(bb.offsetCopy(nx, -1, 0.0f), true).isEmpty()) {
+			nx = 0.0f;
+			x = 0.0f;
+		}
+
+		if (this.getWorld().getCollisionBoxes(bb.offsetCopy(0.0f, -1, nz), true).isEmpty()) {
+			nz = 0.0f;
+			z = 0.0f;
+		}
+
+		if (this.getWorld().getCollisionBoxes(bb.offsetCopy(nx, -1, nz), true).isEmpty()) {
+			nx = 0.0f;
+			nz = 0.0f;
+			x = 0.0f;
+			z = 0.0f;
+		}
+
+		return new Vec3f(x, movement.y, z);
 	}
 }

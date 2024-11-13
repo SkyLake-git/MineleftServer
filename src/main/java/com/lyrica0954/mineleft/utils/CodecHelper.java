@@ -1,6 +1,6 @@
 package com.lyrica0954.mineleft.utils;
 
-import com.lyrica0954.mineleft.mc.math.Vec3d;
+import com.lyrica0954.mineleft.mc.math.Vec3f;
 import com.lyrica0954.mineleft.mc.math.Vec3i;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -76,18 +76,18 @@ public class CodecHelper {
 		}
 	}
 
-	public static Vec3d readVec3d(ByteBuf buf) throws Exception {
-		return new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+	public static Vec3f readVec3f(ByteBuf buf) throws Exception {
+		return new Vec3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
 	}
 
 	public static Vec3i readVec3i(ByteBuf buf) throws Exception {
 		return new Vec3i(buf.readInt(), buf.readInt(), buf.readInt());
 	}
 
-	public static void writeVec3d(ByteBuf buf, Vec3d vec) throws Exception {
-		buf.writeDouble(vec.x);
-		buf.writeDouble(vec.y);
-		buf.writeDouble(vec.z);
+	public static void writeVec3f(ByteBuf buf, Vec3f vec) throws Exception {
+		buf.writeFloat(vec.x);
+		buf.writeFloat(vec.y);
+		buf.writeFloat(vec.z);
 	}
 
 	public static void writeVec3i(ByteBuf buf, Vec3i vec) throws Exception {

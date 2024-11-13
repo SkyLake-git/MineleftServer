@@ -1,7 +1,7 @@
 package com.lyrica0954.mineleft.network.protocol.types;
 
 import com.lyrica0954.mineleft.mc.math.EntityRot;
-import com.lyrica0954.mineleft.mc.math.Vec3d;
+import com.lyrica0954.mineleft.mc.math.Vec3f;
 import com.lyrica0954.mineleft.utils.CodecHelper;
 import com.lyrica0954.mineleft.utils.FlagInterface;
 import io.netty.buffer.ByteBuf;
@@ -10,7 +10,7 @@ public class InputData implements FlagInterface {
 
 	protected long flags;
 
-	protected Vec3d delta;
+	protected Vec3f delta;
 
 	protected EntityRot rot;
 
@@ -20,7 +20,7 @@ public class InputData implements FlagInterface {
 
 	public InputData() {
 		this.flags = 0;
-		this.delta = new Vec3d();
+		this.delta = new Vec3f();
 		this.moveVecX = 0;
 		this.moveVecZ = 0;
 		this.rot = new EntityRot();
@@ -48,13 +48,13 @@ public class InputData implements FlagInterface {
 		this.flags = flags;
 	}
 
-	public Vec3d getDelta() {
+	public Vec3f getDelta() {
 		return delta;
 	}
 
 	public void read(ByteBuf buf) throws Exception {
 		this.flags = buf.readLong();
-		this.delta = CodecHelper.readVec3d(buf);
+		this.delta = CodecHelper.readVec3f(buf);
 		this.moveVecX = buf.readFloat();
 		this.moveVecZ = buf.readFloat();
 		this.rot = new EntityRot();
@@ -64,7 +64,7 @@ public class InputData implements FlagInterface {
 
 	public void write(ByteBuf buf) throws Exception {
 		buf.writeLong(this.flags);
-		CodecHelper.writeVec3d(buf, this.delta);
+		CodecHelper.writeVec3f(buf, this.delta);
 		buf.writeFloat(this.moveVecX);
 		buf.writeFloat(this.moveVecZ);
 
